@@ -13,6 +13,7 @@ from config import get_settings
 from db.base import init_db
 from routers import calls, appointments, clinics, payments, auth, webhooks, analytics
 from routers.advanced_appointments import router as advanced_appointments_router
+from routers.analytics_v2 import router as analytics_v2_router
 
 # ── Structured logging ────────────────────────────────────────────────────────
 structlog.configure(
@@ -72,6 +73,7 @@ app.include_router(payments.router,     prefix="/api/payments",      tags=["Paym
 app.include_router(webhooks.router,     prefix="/webhooks",          tags=["Webhooks"])
 app.include_router(analytics.router,    prefix="/api/analytics",     tags=["Analytics"])
 app.include_router(advanced_appointments_router, prefix="/api/advanced-appointments", tags=["Advanced Appointments"])
+app.include_router(analytics_v2_router, prefix="/api/analytics", tags=["Analytics"])
 
 
 @app.get("/", tags=["Health"])

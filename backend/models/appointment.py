@@ -4,7 +4,7 @@ models/appointment.py — Appointment ORM model
 import uuid
 import enum
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Integer, Text, ForeignKey, Enum
+from sqlalchemy import String, Boolean, DateTime, Integer, Text, ForeignKey, Enum, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
 
@@ -55,6 +55,14 @@ class Appointment(Base):
     # Reminders
     sms_sent: Mapped[bool]      = mapped_column(Boolean, default=False)
     reminder_sent: Mapped[bool] = mapped_column(Boolean, default=False)
+    reminder_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    # No-show risk (0.0 - 1.0), predicted by analytics service
+    no_show_risk: Mapped[float] = mapped_column(Float, default=0.0, nullable=True)
+
+    # Patient satisfaction NPS score (0-10), collected post-appointment
+    satisfaction_nps: Mapped[int] = mapped_column(Integer, nullable=True)
+    satisfaction_feedback: Mapped[str] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -13,6 +13,7 @@ from .advanced_appointments import (
     GroupBooking, GroupBookingMember,
     Questionnaire, QuestionnaireResponse, QuestionStatus,
 )
+from .payment import Invoice, InvoiceStatus, InsuranceClaim, InsuranceProvider, ClaimStatus
 
 __all__ = [
     "Clinic", "Doctor", "Patient",
@@ -23,4 +24,6 @@ __all__ = [
     "RecurringAppointmentTemplate",
     "GroupBooking", "GroupBookingMember",
     "Questionnaire", "QuestionnaireResponse", "QuestionStatus",
+    "Invoice", "InvoiceStatus",
+    "InsuranceClaim", "InsuranceProvider", "ClaimStatus",
 ]
