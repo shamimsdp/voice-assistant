@@ -14,6 +14,13 @@ from db.base import init_db
 from routers import calls, appointments, clinics, payments, auth, webhooks, analytics
 from routers.advanced_appointments import router as advanced_appointments_router
 from routers.analytics_v2 import router as analytics_v2_router
+from routers.inventory import router as inventory_router
+from routers.staff_scheduling import router as staff_scheduling_router
+from routers.lab_integration import router as lab_integration_router
+from routers.ehr import router as ehr_router
+from routers.telemedicine import router as telemedicine_router
+from routers.pharmacy import router as pharmacy_router
+from routers.emergency import router as emergency_router
 
 # ── Structured logging ────────────────────────────────────────────────────────
 structlog.configure(
@@ -74,6 +81,13 @@ app.include_router(webhooks.router,     prefix="/webhooks",          tags=["Webh
 app.include_router(analytics.router,    prefix="/api/analytics",     tags=["Analytics"])
 app.include_router(advanced_appointments_router, prefix="/api/advanced-appointments", tags=["Advanced Appointments"])
 app.include_router(analytics_v2_router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(inventory_router, prefix="/api/inventory", tags=["Inventory"])
+app.include_router(staff_scheduling_router, prefix="/api/staff-scheduling", tags=["Staff Scheduling"])
+app.include_router(lab_integration_router, prefix="/api/lab", tags=["Lab Integration"])
+app.include_router(ehr_router, prefix="/api/ehr", tags=["EHR"])
+app.include_router(telemedicine_router, prefix="/api/telemedicine", tags=["Telemedicine"])
+app.include_router(pharmacy_router, prefix="/api/pharmacy", tags=["Pharmacy"])
+app.include_router(emergency_router, prefix="/api/emergency", tags=["Emergency"])
 
 
 @app.get("/", tags=["Health"])

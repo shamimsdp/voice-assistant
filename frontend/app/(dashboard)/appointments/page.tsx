@@ -6,17 +6,30 @@ import {
   Search,
   Plus,
   Filter,
-  Check,
-  X,
   Send,
   CreditCard,
   User,
   Phone,
   Clock,
   Sparkles,
-  HelpCircle,
-  FileSpreadsheet
+  X,
 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const appointmentSchema = z.object({
+  patientName: z.string().min(1, "Name is required").max(100),
+  phone: z
+    .string()
+    .min(11, "Must be at least 11 digits")
+    .regex(/^01[3-9]\d{8}$/, "Invalid BD phone number (e.g. 01711223344)"),
+  doctorName: z.string().min(1, "Select a doctor"),
+  date: z.string().min(1, "Select a date"),
+  time: z.string().min(1, "Select a time slot"),
+});
+
+type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 interface Appointment {
   id: string;
@@ -45,16 +58,20 @@ export default function AppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [doctorFilter, setDoctorFilter] = useState("All");
-
-  // Modal State for New Booking
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newApt, setNewApt] = useState({
-    patientName: "",
-    phone: "",
-    doctorName: "Dr. Shah Alam",
-    department: "Cardiology",
-    date: new Date().toISOString().split("T")[0],
-    time: "10:00 AM",
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<AppointmentFormData>({
+    resolver: zodResolver(appointmentSchema),
+    defaultValues: {
+      doctorName: "Dr. Shah Alam",
+      date: new Date().toISOString().split("T")[0],
+      time: "10:00 AM",
+    },
   });
 
   const doctorsList = [
@@ -63,35 +80,23 @@ export default function AppointmentsPage() {
     { name: "Dr. M. Rahman", dept: "Orthopedics" },
   ];
 
-  const handleCreateAppointment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newApt.patientName || !newApt.phone) return;
-
-    const selectedDoc = doctorsList.find(d => d.name === newApt.doctorName);
-
+  const onSubmit = (data: AppointmentFormData) => {
+    const selectedDoc = doctorsList.find((d) => d.name === data.doctorName);
     const created: Appointment = {
       id: `APT00${appointments.length + 1}`,
-      patientName: newApt.patientName,
-      phone: newApt.phone,
-      doctorName: newApt.doctorName,
+      patientName: data.patientName,
+      phone: data.phone,
+      doctorName: data.doctorName,
       department: selectedDoc ? selectedDoc.dept : "General",
-      date: newApt.date,
-      time: newApt.time,
+      date: data.date,
+      time: data.time,
       status: "Pending Payment",
       smsStatus: "Not Sent",
       amount: 500,
     };
-
     setAppointments([created, ...appointments]);
     setShowAddModal(false);
-    setNewApt({
-      patientName: "",
-      phone: "",
-      doctorName: "Dr. Shah Alam",
-      department: "Cardiology",
-      date: new Date().toISOString().split("T")[0],
-      time: "10:00 AM",
-    });
+    reset();
   };
 
   const toggleStatus = (id: string) => {
@@ -122,7 +127,6 @@ export default function AppointmentsPage() {
     );
   };
 
-  // Filter Logic
   const filteredAppointments = appointments.filter(apt => {
     const matchesSearch =
       apt.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,14 +151,13 @@ export default function AppointmentsPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Appointments</h2>
           <p className="text-sm text-slate-400">View, search, and manage patient bookings and bKash transaction states.</p>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => { setShowAddModal(true); reset(); }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] transition-all shadow-md shadow-emerald-500/5 hover:scale-[1.01]"
         >
           <Plus className="w-4 h-4" />
@@ -162,9 +165,7 @@ export default function AppointmentsPage() {
         </button>
       </div>
 
-      {/* Filter / Search Bar */}
       <div className="bg-[#0a1120] border border-slate-800/60 p-4 rounded-2xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-sm">
-        {/* Search */}
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
@@ -176,9 +177,7 @@ export default function AppointmentsPage() {
           />
         </div>
 
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Doctor filter */}
           <div className="flex items-center gap-2 bg-[#070b13] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300">
             <Filter className="w-3.5 h-3.5 text-slate-500" />
             <span>Doctor:</span>
@@ -196,7 +195,6 @@ export default function AppointmentsPage() {
             </select>
           </div>
 
-          {/* Status filter */}
           <div className="flex items-center gap-2 bg-[#070b13] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300">
             <CreditCard className="w-3.5 h-3.5 text-slate-500" />
             <span>Payment:</span>
@@ -215,7 +213,6 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
-      {/* Appointments List Container */}
       <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl overflow-hidden shadow-sm">
         {filteredAppointments.length > 0 ? (
           <div className="overflow-x-auto">
@@ -260,9 +257,7 @@ export default function AppointmentsPage() {
                     <td className="py-4 px-6">
                       <button
                         onClick={() => toggleStatus(apt.id)}
-                        className={`px-2 py-0.5 rounded-full font-medium text-[10px] cursor-pointer hover:opacity-80 transition-opacity ${getStatusBadge(
-                          apt.status
-                        )}`}
+                        className={`px-2 py-0.5 rounded-full font-medium text-[10px] cursor-pointer hover:opacity-80 transition-opacity ${getStatusBadge(apt.status)}`}
                         title="Click to cycle status (Simulated)"
                       >
                         {apt.status}
@@ -318,7 +313,6 @@ export default function AppointmentsPage() {
         )}
       </div>
 
-      {/* Book Appointment Modal Drawer */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#070b13]/80 backdrop-blur-sm">
           <div className="bg-[#0a1120] border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-xl animate-in zoom-in-95 duration-200">
@@ -335,39 +329,37 @@ export default function AppointmentsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateAppointment} className="flex flex-col gap-4">
-              {/* Patient Name */}
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Patient Name</label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. Tariqul Islam"
-                  value={newApt.patientName}
-                  onChange={(e) => setNewApt({ ...newApt, patientName: e.target.value })}
+                  {...register("patientName")}
                   className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
                 />
+                {errors.patientName && (
+                  <span className="text-[10px] text-red-400 font-medium">{errors.patientName.message}</span>
+                )}
               </div>
 
-              {/* Patient Phone */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Phone Number (Bangladeshi)</label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. 01711223344"
-                  value={newApt.phone}
-                  onChange={(e) => setNewApt({ ...newApt, phone: e.target.value })}
+                  {...register("phone")}
                   className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
                 />
+                {errors.phone && (
+                  <span className="text-[10px] text-red-400 font-medium">{errors.phone.message}</span>
+                )}
               </div>
 
-              {/* Doctor */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Doctor Specialist</label>
                 <select
-                  value={newApt.doctorName}
-                  onChange={(e) => setNewApt({ ...newApt, doctorName: e.target.value })}
+                  {...register("doctorName")}
                   className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
                 >
                   {doctorsList.map((doc) => (
@@ -376,24 +368,27 @@ export default function AppointmentsPage() {
                     </option>
                   ))}
                 </select>
+                {errors.doctorName && (
+                  <span className="text-[10px] text-red-400 font-medium">{errors.doctorName.message}</span>
+                )}
               </div>
 
-              {/* Date & Time */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date</label>
                   <input
                     type="date"
-                    value={newApt.date}
-                    onChange={(e) => setNewApt({ ...newApt, date: e.target.value })}
+                    {...register("date")}
                     className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
                   />
+                  {errors.date && (
+                    <span className="text-[10px] text-red-400 font-medium">{errors.date.message}</span>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Time Slot</label>
                   <select
-                    value={newApt.time}
-                    onChange={(e) => setNewApt({ ...newApt, time: e.target.value })}
+                    {...register("time")}
                     className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
                   >
                     <option value="09:00 AM">09:00 AM</option>
@@ -403,15 +398,16 @@ export default function AppointmentsPage() {
                     <option value="02:00 PM">02:00 PM</option>
                     <option value="03:00 PM">03:00 PM</option>
                   </select>
+                  {errors.time && (
+                    <span className="text-[10px] text-red-400 font-medium">{errors.time.message}</span>
+                  )}
                 </div>
               </div>
 
-              {/* Notice */}
               <p className="text-[10px] text-slate-500 leading-normal bg-slate-900/60 p-2.5 border border-slate-800/80 rounded-lg">
                 * Note: Manual appointments are default saved as <span className="text-amber-400 font-semibold">Pending Payment</span>. The patient will be sent a SMS containing the bKash payment portal link.
               </p>
 
-              {/* Submit buttons */}
               <div className="flex gap-3 justify-end border-t border-slate-800 pt-4 mt-2">
                 <button
                   type="button"

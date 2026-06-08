@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Stethoscope,
   Smartphone,
@@ -59,11 +60,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center p-4 font-sans text-slate-100">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center p-4 font-sans text-slate-100"
+    >
       
       {/* Visual Mock OTP Notification Banner at top */}
       {step === 2 && simulatedOTP && (
-        <div className="fixed top-5 max-w-sm w-full bg-[#0a1120] border border-emerald-500/30 p-3.5 rounded-2xl shadow-xl shadow-emerald-500/5 animate-in slide-in-from-top-5 duration-300 z-50">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-5 max-w-sm w-full bg-[#0a1120] border border-emerald-500/30 p-3.5 rounded-2xl shadow-xl shadow-emerald-500/5 z-50"
+        >
           <div className="flex gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
               <Smartphone className="w-4 h-4" />
@@ -75,11 +84,16 @@ export default function LoginPage() {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Main card */}
-      <div className="w-full max-w-md bg-[#0a1120] border border-slate-800/80 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="w-full max-w-md bg-[#0a1120] border border-slate-800/80 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden"
+      >
         
         {/* Decorative glass glow backdrops */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -184,7 +198,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

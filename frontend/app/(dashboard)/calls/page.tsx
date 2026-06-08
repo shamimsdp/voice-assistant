@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   PhoneCall,
   Search,
@@ -144,12 +145,20 @@ export default function CallsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto h-[calc(100vh-8rem)]">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-6 max-w-7xl mx-auto h-[calc(100vh-8rem)]"
+    >
       {/* Title Header */}
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <h2 className="text-2xl font-bold text-white tracking-tight">Call Logs & Transcripts</h2>
         <p className="text-sm text-slate-400">Review patient phone transcripts, conversation sentiments, and extracted intent structures.</p>
-      </div>
+      </motion.div>
 
       {/* Split view workspace */}
       <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
@@ -187,11 +196,14 @@ export default function CallsPage() {
 
           {/* Logs scroll area */}
           <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-            {filteredLogs.map(log => {
+            {filteredLogs.map((log, idx) => {
               const isSelected = log.id === selectedCallId;
               return (
-                <div
+                <motion.div
                   key={log.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
                   onClick={() => setSelectedCallId(log.id)}
                   className={`border p-4 rounded-xl flex flex-col gap-2.5 cursor-pointer transition-all duration-200 ${
                     isSelected
@@ -226,14 +238,19 @@ export default function CallsPage() {
                       {log.intent}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
 
         {/* Right Side: Detailed Transcript Panel */}
-        <div className="w-full lg:w-[480px] bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5 flex flex-col gap-4 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="w-full lg:w-[480px] bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5 flex flex-col gap-4 overflow-hidden"
+        >
           {/* Metadata Card Header */}
           <div className="border-b border-slate-800 pb-4 flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -282,8 +299,11 @@ export default function CallsPage() {
             {/* Message Bubble list */}
             <div className="flex flex-col gap-3 border-t border-slate-800/80 pt-3">
               {selectedCall.transcript.map((line, index) => (
-                <div
+                <motion.div
                   key={index}
+                  initial={{ opacity: 0, x: line.speaker === "AI" ? -15 : 15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
                   className={`flex gap-3 max-w-[90%] ${
                     line.speaker === "AI" ? "self-start" : "self-end flex-row-reverse"
                   }`}
@@ -301,15 +321,15 @@ export default function CallsPage() {
                     <p className="font-semibold text-[9px] mb-0.5 text-slate-500">{line.speaker} • {line.time}</p>
                     <p>{line.text}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
           </div>
 
-        </div>
+        </motion.div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

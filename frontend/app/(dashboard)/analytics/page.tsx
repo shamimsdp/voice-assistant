@@ -13,6 +13,9 @@ import {
   Smile,
   AlertCircle
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, LineChart,
+} from "recharts";
 
 export default function AnalyticsPage() {
   const [timeframe, setTimeframe] = useState("Last 7 Days");
@@ -29,9 +32,17 @@ export default function AnalyticsPage() {
     { day: "Tue", calls: 168, bookings: 22 },
     { day: "Wed", calls: 189, bookings: 25 },
     { day: "Thu", calls: 172, bookings: 20 },
-    { day: "Fri", calls: 210, bookings: 31 }, // Friday peak
+    { day: "Fri", calls: 210, bookings: 31 },
     { day: "Sat", calls: 130, bookings: 12 },
     { day: "Sun", calls: 122, bookings: 15 },
+  ];
+
+  const trendData = [
+    { month: "Jan", calls: 3200, bookings: 380 },
+    { month: "Feb", calls: 2800, bookings: 340 },
+    { month: "Mar", calls: 4100, bookings: 490 },
+    { month: "Apr", calls: 3800, bookings: 430 },
+    { month: "May", calls: 4500, bookings: 520 },
   ];
 
   const peakHours = [
@@ -40,6 +51,22 @@ export default function AnalyticsPage() {
     { hour: "1 PM - 3 PM", load: "Low", percent: 25 },
     { hour: "3 PM - 5 PM", load: "Medium", percent: 60 },
   ];
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#0a1120] border border-slate-700 rounded-xl px-3 py-2 text-xs shadow-xl">
+          <p className="text-white font-semibold mb-1">{label}</p>
+          {payload.map((entry: any, idx: number) => (
+            <p key={idx} style={{ color: entry.color }} className="font-mono">
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
@@ -111,7 +138,6 @@ export default function AnalyticsPage() {
 
           {/* Sentiment Progress Bars */}
           <div className="flex flex-col gap-4 py-2">
-            {/* Positive */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-slate-300">Positive Intent</span>
@@ -121,8 +147,6 @@ export default function AnalyticsPage() {
                 <div className="h-full bg-emerald-500 rounded-full" style={{ width: "72%" }}></div>
               </div>
             </div>
-
-            {/* Neutral */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-slate-300">Neutral Info Queries</span>
@@ -132,8 +156,6 @@ export default function AnalyticsPage() {
                 <div className="h-full bg-amber-500 rounded-full" style={{ width: "22%" }}></div>
               </div>
             </div>
-
-            {/* Negative */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between text-xs font-medium">
                 <span className="text-slate-300">Payment Retry/Failures</span>
@@ -180,39 +202,17 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* Simple Custom Bar Chart in HTML/CSS */}
-          <div className="flex-1 flex items-end justify-between h-48 pt-4 px-2">
-            {callVolumeData.map((data, idx) => {
-              const callHeightPercent = (data.calls / 220) * 100;
-              const bookingHeightPercent = (data.bookings / 40) * 100;
-              return (
-                <div key={idx} className="flex flex-col items-center gap-2 flex-1 group">
-                  <div className="w-full flex items-end justify-center gap-1.5 h-36">
-                    {/* Calls Bar */}
-                    <div
-                      className="w-4 rounded-t bg-emerald-500/80 hover:bg-emerald-400 transition-all duration-300 relative"
-                      style={{ height: `${callHeightPercent}%` }}
-                      title={`${data.calls} calls`}
-                    >
-                      <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 text-[9px] font-mono font-bold text-white px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        {data.calls}
-                      </span>
-                    </div>
-                    {/* Bookings Bar */}
-                    <div
-                      className="w-4 rounded-t bg-teal-400/80 hover:bg-teal-300 transition-all duration-300 relative"
-                      style={{ height: `${bookingHeightPercent}%` }}
-                      title={`${data.bookings} bookings`}
-                    >
-                      <span className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 text-[9px] font-mono font-bold text-white px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        {data.bookings}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-semibold text-slate-500 font-mono mt-1">{data.day}</span>
-                </div>
-              );
-            })}
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={callVolumeData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <XAxis dataKey="day" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="calls" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={28} name="Calls Handled" />
+                <Bar dataKey="bookings" fill="#2dd4bf" radius={[4, 4, 0, 0]} maxBarSize={28} name="Appointments Booked" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
@@ -268,6 +268,28 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+      </div>
+
+      {/* Monthly Trend Line Chart */}
+      <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-6 flex flex-col gap-5 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 className="font-bold text-base text-white flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            Monthly Call Volume Trend
+          </h3>
+        </div>
+        <div className="h-72 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Line type="monotone" dataKey="calls" stroke="#10b981" strokeWidth={2} dot={{ fill: "#10b981", r: 4 }} name="Total Calls" />
+              <Line type="monotone" dataKey="bookings" stroke="#2dd4bf" strokeWidth={2} dot={{ fill: "#2dd4bf", r: 4 }} name="Bookings" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

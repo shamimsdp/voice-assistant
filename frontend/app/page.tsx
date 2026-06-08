@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Stethoscope,
   Phone,
@@ -74,14 +75,32 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b13] text-slate-100 flex flex-col font-sans relative overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-[#070b13] text-slate-100 flex flex-col font-sans relative overflow-hidden"
+    >
       
       {/* Decorative colored lights backdrop */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <motion.div
+        animate={{ scale: [1, 1.05, 1], opacity: [0.05, 0.08, 0.05] }}
+        transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+        className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none"
+      />
+      <motion.div
+        animate={{ scale: [1, 1.1, 1], opacity: [0.05, 0.07, 0.05] }}
+        transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+        className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[120px] pointer-events-none"
+      />
 
       {/* Top Navbar */}
-      <header className="h-20 max-w-7xl w-full mx-auto px-6 flex items-center justify-between z-10">
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="h-20 max-w-7xl w-full mx-auto px-6 flex items-center justify-between z-10"
+      >
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-[#070b13] shadow-md shadow-emerald-500/20">
             <Stethoscope className="w-5 h-5" />
@@ -103,35 +122,69 @@ export default function LandingPage() {
             Try Live Demo
           </button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-12 md:py-20 flex flex-col lg:flex-row items-center gap-12 z-10">
+      <motion.main
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="flex-1 max-w-7xl w-full mx-auto px-6 py-12 md:py-20 flex flex-col lg:flex-row items-center gap-12 z-10"
+      >
         
         {/* Left Side: Hero Info */}
-        <div className="flex-1 flex flex-col gap-6 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400 uppercase tracking-wider w-fit">
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex-1 flex flex-col gap-6 text-left"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-semibold text-emerald-400 uppercase tracking-wider w-fit"
+          >
             <Sparkles className="w-3 h-3" />
             Empowering Bangladeshi Clinics
-          </div>
+          </motion.div>
           
-          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.1]">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="text-4xl md:text-5xl font-black text-white tracking-tight leading-[1.1]"
+          >
             Automate Clinic Appointments with <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Bangla AI Voice Agents</span>
-          </h1>
+          </motion.h1>
 
-          <p className="text-sm md:text-base text-slate-400 leading-relaxed max-w-xl">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="text-sm md:text-base text-slate-400 leading-relaxed max-w-xl"
+          >
             A production-ready voice assistant that handles incoming patient calls in Bangla, English, or Banglish. Integrates with Twilio streams, automates doctor slots, and collects deposit payments via bKash gateway.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-wrap items-center gap-4 mt-2">
-            <Link
-              href="/login"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-[#070b13] hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/10 hover:scale-[1.01] transition-all"
-            >
-              Enter Clinic Portal
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <button
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="flex flex-wrap items-center gap-4 mt-2"
+          >
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                href="/login"
+                className="flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-[#070b13] hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/10 transition-all"
+              >
+                Enter Clinic Portal
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => {
                 setDemoActive(true);
                 const element = document.getElementById("demo-box");
@@ -140,28 +193,39 @@ export default function LandingPage() {
               className="px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-[#0a1120] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition-colors"
             >
               Try Assistant Demo
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
 
           {/* Key Quick Badges */}
-          <div className="grid grid-cols-3 gap-4 border-t border-slate-800/80 pt-6 mt-4">
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-white">bn-BD</span>
-              <span className="text-[10px] text-slate-500 uppercase font-semibold">Localized STT/TTS</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-white">৳ bKash</span>
-              <span className="text-[10px] text-slate-500 uppercase font-semibold">Sandbox Enabled</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-white">Friday Guard</span>
-              <span className="text-[10px] text-slate-500 uppercase font-semibold">Jumma Prayer Filter</span>
-            </div>
-          </div>
-        </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            className="grid grid-cols-3 gap-4 border-t border-slate-800/80 pt-6 mt-4"
+          >
+            {[{ label: "bn-BD", sub: "Localized STT/TTS" }, { label: "৳ bKash", sub: "Sandbox Enabled" }, { label: "Friday Guard", sub: "Jumma Prayer Filter" }].map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 + i * 0.1 }}
+                className="flex flex-col"
+              >
+                <span className="text-lg font-bold text-white">{item.label}</span>
+                <span className="text-[10px] text-slate-500 uppercase font-semibold">{item.sub}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
 
         {/* Right Side: Demo Box Simulator */}
-        <div id="demo-box" className="w-full lg:w-[480px] shrink-0 bg-[#0a1120] border border-slate-800/60 rounded-3xl p-6 flex flex-col gap-5 shadow-2xl relative">
+        <motion.div
+          id="demo-box"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="w-full lg:w-[480px] shrink-0 bg-[#0a1120] border border-slate-800/60 rounded-3xl p-6 flex flex-col gap-5 shadow-2xl relative"
+        >
           
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
             <div className="flex items-center gap-2.5">
@@ -276,73 +340,67 @@ export default function LandingPage() {
             </div>
           )}
 
-        </div>
+        </motion.div>
 
-      </main>
+      </motion.main>
 
       {/* Feature section */}
-      <section className="bg-[#0a1120] border-t border-slate-800/80 py-16 px-6 z-10">
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="bg-[#0a1120] border-t border-slate-800/80 py-16 px-6 z-10"
+      >
         <div className="max-w-7xl mx-auto flex flex-col gap-10">
-          <div className="text-center max-w-xl mx-auto flex flex-col gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-center max-w-xl mx-auto flex flex-col gap-2"
+          >
             <h2 className="text-2xl font-bold text-white">Full-Featured Localization Stack</h2>
             <p className="text-xs md:text-sm text-slate-400">Everything needed to deploy AI medical assistants under Bangladeshi clinic structures.</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Feature 1 */}
-            <div className="bg-[#070b13] border border-slate-800/70 p-5 rounded-2xl flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <MessageSquare className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Multilingual Speech</h3>
-              <p className="text-xs text-slate-500 leading-normal">
-                Seamless translation loops across Bangla, English, and local Banglish structures.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-[#070b13] border border-slate-800/70 p-5 rounded-2xl flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
-                <CreditCard className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-white">bKash Integration</h3>
-              <p className="text-xs text-slate-500 leading-normal">
-                Automated deposit token validation linked with local carrier billing.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-[#070b13] border border-slate-800/70 p-5 rounded-2xl flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Jumma Guards</h3>
-              <p className="text-xs text-slate-500 leading-normal">
-                Bypasses call booking registrations during standard Friday prayer blocks.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="bg-[#070b13] border border-slate-800/70 p-5 rounded-2xl flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <Smartphone className="w-4 h-4" />
-              </div>
-              <h3 className="text-sm font-bold text-white">Unicode SMS</h3>
-              <p className="text-xs text-slate-500 leading-normal">
-                Sends automated booking alerts over local carrier SMS gateways in Bangla script.
-              </p>
-            </div>
-
+            {[
+              { icon: MessageSquare, title: "Multilingual Speech", desc: "Seamless translation loops across Bangla, English, and local Banglish structures.", color: "emerald" },
+              { icon: CreditCard, title: "bKash Integration", desc: "Automated deposit token validation linked with local carrier billing.", color: "pink" },
+              { icon: Calendar, title: "Jumma Guards", desc: "Bypasses call booking registrations during standard Friday prayer blocks.", color: "blue" },
+              { icon: Smartphone, title: "Unicode SMS", desc: "Sends automated booking alerts over local carrier SMS gateways in Bangla script.", color: "amber" },
+            ].map((feature, i) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.2 + i * 0.1 }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="bg-[#070b13] border border-slate-800/70 p-5 rounded-2xl flex flex-col gap-3"
+              >
+                <div className={`w-9 h-9 rounded-xl bg-${feature.color}-500/10 border border-${feature.color}-500/20 flex items-center justify-center text-${feature.color}-400`}>
+                  <feature.icon className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-white">{feature.title}</h3>
+                <p className="text-xs text-slate-500 leading-normal">{feature.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#070b13] py-8 text-center text-slate-600 text-xs">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="border-t border-slate-800/80 bg-[#070b13] py-8 text-center text-slate-600 text-xs"
+      >
         <p>© {new Date().getFullYear()} Shasthya Seba AI. Built for premium clinic workflows in Bangladesh.</p>
-      </footer>
+      </motion.footer>
 
-    </div>
+    </motion.div>
   );
 }

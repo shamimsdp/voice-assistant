@@ -1,90 +1,115 @@
-# Feature Progress
+# Feature Progress & Roadmap
 
-## Completed Features
+## Legend
+- ✅ **DONE** — Backend + Frontend both complete
+- 🟡 **API DONE** — Backend API exists, no frontend page yet
+- 🟠 **PARTIAL** — Partial implementation
+- ❌ **NOT STARTED** — Not built anywhere
 
-### Backend
-- FastAPI application with WebSocket endpoints for real-time voice communication
-- Database models: Appointment, Patient, Doctor, Clinic, User, CallLog with SQLAlchemy ORM
-- Integrated services: bKash payment gateway, Gemini 2.0 Flash LLM, Google Cloud STT/TTS, SMS service, Twilio wrapper
-- Voice agent orchestrator implementing STT → Gemini LLM → TTS pipeline with session management
-- Emergency keyword detection for medical emergencies (heart attack, chest pain, bleeding, etc.)
-- Appointment management: booking, checking availability, SMS confirmation, cancellation, rescheduling
-- Friday Jumma prayer guard (automatically blocks 12:00 PM - 2:00 PM slots on Fridays)
-- Multilingual support: Bangla (bn-BD) and English (en-US) with language switching during conversation
-- Docker configuration for backend and frontend services
-- Comprehensive test suite covering payment processing, holiday/Jumma guards, and service integrations
-- Environment configuration management with .env.example template
-- RESTful API with automatic Swagger/OpenAPI documentation
+---
 
-### Frontend
-- Next.js 13+ dashboard for clinic staff with React Server Components
-- Core pages: Appointment management, patient logs, clinic analytics, settings
-- Responsive UI Tailwind CSS styling
-- Real-time updates using WebSocket connections to backend
-- Role-based access control for different clinic staff levels
-- Dockerfile for containerized frontend deployment
-- Environment setup and build optimization
-- Basic authentication system for clinic staff login
+## CLINICAL
 
-## Work In Progress
+| Feature | Status | Backend | Frontend | Notes |
+|---------|--------|---------|----------|-------|
+| **Overview (Dashboard)** | ✅ DONE | `GET /api/analytics/summary` | `/dashboard` | Stat cards, live call monitor, appointment queue |
+| **Analytics** | ✅ DONE | `GET /api/analytics/*`, `GET /api/analytics/v2/*` | `/analytics` | KPIs, trends, demographics, latency, sentiment, recharts |
+| **Call Log** | ✅ DONE | `GET /api/calls`, `GET /api/calls/{id}` | `/calls` | Transcripts, sentiment filtering, audio waveform |
+| **Appointments** | ✅ DONE | `GET/POST /api/appointments/*`, `GET/POST /api/advanced-appointments/*` | `/appointments` | CRUD, filters, booking modal with zod validation |
+| **Schedule** | 🟡 API DONE | `staff_scheduling_service.py` — weekly schedules, availability, time-off, shift overrides (`/api/staff-scheduling/*`) | ❌ Not started | Need a doctor schedule view + time-off request UI |
+| **Patients** | 🟡 API DONE | `Patient` model exists, EHR service has patient summary (`/api/ehr/patients/{id}/summary`) | ❌ Not started | Need patient list, registration, search, detail/history page |
+| **Support** | ❌ NOT STARTED | — | ❌ Not started | Ticketing/help system for clinic staff |
 
-### 1. Enhanced Voice Agent Capabilities [Started]
-- Created voice_enhancements.py service with sentiment analysis, intent recognition, and Bangla dialect support
-- Improve Bangla language understanding with custom intent recognition for medical terminology
-- Add sentiment analysis to detect patient frustration, satisfaction, or urgency during conversations
-- Implement voice biometrics for patient verification using speech patterns
-- Add support for handling interruptions, clarifications, and context switching in conversations
-- Integrate with local Bengali dialects recognition (Sylheti, Chittagonian, Rangpuri variations)
-- Add ability to handle multiple turns of conversation with extended context retention (>10 exchanges)
-- Implement voice-based feedback collection after calls (patient satisfaction ratings via voice)
-- Add proactive health reminders and follow-up call scheduling based on appointment types
-- Implement noise cancellation and audio enhancement for better STT accuracy in noisy environments
-- Add support for video consultation initiation from voice calls when needed
+---
 
-## Future Development Scope
+## SETUP
 
-### 2. Advanced Appointment Features
-- Implement waiting list management for fully booked slots
-- Add recurring appointment functionality for chronic patients
-- Implement doctor specialization matching based on symptoms
-- Add appointment modification and rescheduling with conflict detection
-- Implement group appointment booking for family/vaccination visits
-- Add pre-visit questionnaire collection via voice/SMS
-- Implement AI-powered appointment duration estimation based on complaint type
-- Add resource allocation optimization (doctors, rooms, equipment)
+| Feature | Status | Backend | Frontend | Notes |
+|---------|--------|---------|----------|-------|
+| **AI Agents** | 🟠 PARTIAL | `gemini_service.py`, `voice_enhancements.py`, `symptom_matcher.py` — full voice pipeline | Voice tone selector in `/settings` only | Need a dedicated agent config page: prompt tuning, intent mapping, language model selection, fallback behaviors |
+| **Services** | 🟡 API DONE | Lab, pharmacy, telemedicine, emergency services all built | ❌ Not started | Need pages for configuring clinic services (lab test catalog, pharmacy pricing, telemedicine settings, emergency protocols) |
+| **Knowledge** | ❌ NOT STARTED | — | ❌ Not started | Medical knowledge base, FAQ management, clinic protocol docs — could feed into AI agent responses |
+| **Website** | ❌ NOT STARTED | — | ❌ Not started | Clinic website builder or landing page config (hours, doctors, contact info) |
 
-### 3. Payment & Financial Features
-- Add full payment processing (not just deposits) for consultations
-- Implement insurance claim processing integration with Bangladeshi providers
-- Add financial reporting and analytics for clinic owners
-- Implement discount/promotion code system for loyal patients
-- Add installment payment options for expensive procedures
-- Implement automated receipt generation and delivery via SMS/email
-- Add referral tracking and commission management system
+---
 
-### 4. Clinic Operations Enhancements
-- Add inventory management for medical supplies with low-stock alerts
-- Implement staff scheduling and shift management with overtime tracking
-- Add patient medical history tracking (with proper privacy controls and consent)
-- Implement queue management system for walk-in patients
-- Add equipment maintenance scheduling and tracking
-- Implement infection control protocol tracking and compliance reporting
-- Add staff performance metrics and productivity analytics
+## ACCOUNT
 
-### 5. Integration & Expansion
-- Add integration with Bangladeshi health information systems (DHIS2, etc.)
-- Implement telemedicine video consultation capabilities with recording option
-- Add pharmacy prescription delivery coordination with local pharmacies
-- Implement lab test ordering and result delivery integration
-- Add ambulance/emergency services coordination
-- Implement vaccination record tracking and reminder system
-- Add medical device IoT integration (BP monitors, glucose meters, etc.)
+| Feature | Status | Backend | Frontend | Notes |
+|---------|--------|---------|----------|-------|
+| **Notifications** | 🟠 PARTIAL | `sms_service.py` — SMS confirmations/reminders; analytics has smart reminders, no-show risk | Per-appointment SMS trigger in `/appointments` only | Need a notification center: in-app toast/notification center, configurable SMS/email triggers, notification history |
+| **Settings** | ✅ DONE | `GET/PATCH /api/clinics/me`, `GET/POST /api/clinics/doctors` | `/settings` | Clinic info, localization guards, SMS gateway, voice persona, doctor toggles |
 
-### 6. Analytics & Reporting
-- Implement no-show prediction and prevention algorithms with SMS reminders
-- Add patient satisfaction surveys via SMS/voice with NPS scoring
-- Create clinic performance dashboards with KPIs (revenue, utilization, satisfaction)
-- Implement demographic analysis and health trend identification
-- Add predictive staffing based on historical appointment patterns
-- Implement outbreak detection and reporting for public health authorities
-- Add benchmarking against regional clinic performance metrics
+---
+
+## EXTRA — Already Built Backend Features (Need Frontend)
+
+These are fully functional backend APIs that have **no frontend pages yet**.
+
+| Module | API Prefix | Endpoints | What Frontend Needs |
+|--------|-----------|-----------|---------------------|
+| **EHR / Medical Records** | `/api/ehr/*` | 12 endpoints — records, vitals, diagnoses, prescriptions, allergies, immunizations, family history, patient summary | Patient detail page with tabs for each record type |
+| **Pharmacy / Dispensary** | `/api/pharmacy/*` | 4 endpoints — order creation, listing, items, dispense | Pharmacy order management page |
+| **Lab Integration** | `/api/lab/*` | 9 endpoints — test catalog, orders, results, imaging | Lab ordering + results viewing page |
+| **Emergency & Triage** | `/api/emergency/*` | 6 endpoints — cases, ambulance dispatch | Emergency dashboard + case detail page |
+| **Telemedicine** | `/api/telemedicine/*` | 3 endpoints — sessions, listing, status | Telemedicine scheduling + video call join page |
+| **Inventory** | `/api/inventory/*` | 9 endpoints — items, stock, transactions, supplies, equipment | Inventory management page with stock alerts |
+| **Staff Scheduling** | `/api/staff-scheduling/*` | 7 endpoints — weekly schedules, availability, time-off, overrides | Doctor schedule view + time-off request page |
+| **Invoice / Billing** | `/api/payments/*` | 11 endpoints — invoices, insurance claims, financial reports, payment history | Billing page with invoice creation + payment history |
+| **Advanced Appointments** | `/api/advanced-appointments/*` | 18 endpoints — symptom matching, conflict detection, waiting list, recurring, group bookings, questionnaires | Waiting list management, recurring templates, group booking, pre-visit questionnaires |
+| **Analytics v2** | `/api/analytics/v2/*` | 8 endpoints — full KPIs, demographics, trends, predictive staffing, outbreak detection, no-show risk, NPS | Extended analytics dashboard with predictive insights |
+| **Doctor Management** | `GET/POST/DELETE /api/clinics/doctors` | CRUD for doctors | Doctor list + add/edit page |
+
+---
+
+## EXTRA — Features Not Built Anywhere
+
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| **Patient Portal** | Medium | Patient self-service login (view appointments, pay bills, chat with AI) |
+| **Role-Based Access Control (UI)** | Medium | Admin/Receptionist/Doctor views differ; backend has `UserRole` enum but frontend ignores it |
+| **Reports / Export** | Low | CSV/PDF export for appointments, payments, analytics |
+| **Audit Log** | Low | Track who changed what in the system |
+| **Multi-Clinic Admin** | Low | Super-admin dashboard across clinics |
+| **Staff Attendance** | Low | Clock-in/out tracking |
+| **Referral Management** | Low | Inter-doctor or inter-clinic referrals |
+| **Ward / Bed Management** | Low | Inpatient management |
+| **HL7 / FHIR** | Low | Healthcare interoperability standards |
+| **Knowledge Base UI** | Low | Manage FAQs, protocols that the AI agent can reference |
+
+---
+
+## Build Order (Suggested)
+
+### Phase 1 — High-Value Frontend Pages (backends already built)
+1. **Patients** — List/search patients, registration form, detail page with EHR tabs
+2. **Schedule** — Weekly doctor schedule view, time-off request form
+3. **Pharmacy** — Order list, create/manage pharmacy orders
+4. **Lab** — Test catalog, order lab tests, view results
+5. **Inventory** — Stock levels, transactions, alerts
+
+### Phase 2 — Medium Complexity
+6. **Emergency** — Emergency cases dashboard, ambulance dispatch
+7. **Telemedicine** — Session scheduling, video call integration
+8. **Billing** — Invoice creation, payment history, insurance claims
+9. **AI Agents** — Dedicated config page (prompts, intents, model selection)
+10. **Notifications** — In-app notification center, configurable triggers
+
+### Phase 3 — Advanced
+11. **Knowledge** — Medical knowledge base management
+12. **Services** — Configure all clinic services from one page
+13. **Website** — Clinic public website config
+14. **Support** — Internal ticketing system
+15. **Patient Portal** — Patient self-service login
+
+---
+
+## Current App State (June 2026)
+
+**Backend**: 50+ API endpoints across 15 router groups. Full coverage: auth, calls, appointments (basic + advanced), clinics, payments, analytics (v1 + v2), EHR, pharmacy, emergency, telemedicine, lab integration, staff scheduling, inventory, webhooks/streaming.
+
+**Frontend**: 7 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Call Logs (`/calls`), Analytics (`/analytics`), Settings (`/settings`). Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
+
+**Testing**: 144 passing backend tests (Python/pytest).
+
+**Auth**: OTP via phone + JWT (backend); mock OTP (frontend login page).

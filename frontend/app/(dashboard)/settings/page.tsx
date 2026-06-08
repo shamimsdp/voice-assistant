@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Settings as SettingsIcon,
   Save,
@@ -52,14 +53,25 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto pb-10">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-6 max-w-5xl mx-auto pb-10"
+    >
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5"
+      >
         <div>
           <h2 className="text-2xl font-bold text-white tracking-tight">System Settings</h2>
           <p className="text-sm text-slate-400">Configure clinic schedules, voice assistant prompts, and Bangladesh-specific integrations.</p>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={handleSave}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] transition-all shadow-md shadow-emerald-500/5"
         >
@@ -74,16 +86,26 @@ export default function SettingsPage() {
               Save Configuration
             </>
           )}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Form settings */}
-        <div className="md:col-span-2 flex flex-col gap-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="md:col-span-2 flex flex-col gap-6"
+        >
           
           {/* Section 1: Clinic profile */}
-          <div className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.15 }}
+            className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm"
+          >
             <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider text-emerald-400">
               <Stethoscope className="w-4 h-4" />
               Clinic Info
@@ -97,10 +119,15 @@ export default function SettingsPage() {
                 className="px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50"
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Section 2: Localization Guards (Jumma & Holiday) */}
-          <div className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm"
+          >
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-emerald-400" />
               <h3 className="text-sm font-bold text-white uppercase tracking-wider text-emerald-400">
@@ -141,10 +168,15 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Section 3: SMS Gateway Integrations */}
-          <div className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.25 }}
+            className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm"
+          >
             <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider text-emerald-400">
               <Smartphone className="w-4 h-4" />
               Local SMS Gateway Provider
@@ -177,15 +209,25 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
 
         {/* Right 1 Col: Voice Agent config & Doctor slots */}
-        <div className="flex flex-col gap-6">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="flex flex-col gap-6"
+        >
           
           {/* Section 4: Voice Agent Tone parameters */}
-          <div className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm"
+          >
             <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider text-emerald-400">
               <Sliders className="w-4 h-4" />
               AI Voice Prompt Tuning
@@ -210,10 +252,15 @@ export default function SettingsPage() {
                 <span>Modifying this updates the Gemini system instruction prompts with custom Bangla greeting templates.</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Section 5: Doctor Active shift switches */}
-          <div className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.35 }}
+            className="bg-[#0a1120] border border-slate-800/60 p-5 rounded-2xl flex flex-col gap-4 shadow-sm"
+          >
             <h3 className="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wider text-emerald-400">
               <Calendar className="w-4 h-4" />
               Active Doctors Shift
@@ -242,11 +289,11 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
 
       </form>
-    </div>
+    </motion.div>
   );
 }

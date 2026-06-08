@@ -14,6 +14,25 @@ from .advanced_appointments import (
     Questionnaire, QuestionnaireResponse, QuestionStatus,
 )
 from .payment import Invoice, InvoiceStatus, InsuranceClaim, InsuranceProvider, ClaimStatus
+from .clinic_operations import (
+    InventoryItem, InventoryTransaction, MedicalSupply, Equipment,
+    MedicineCategory, TransactionType, StockAlertLevel,
+)
+from .staff_scheduling import (
+    DoctorSchedule, ShiftOverride, Unavailability,
+    DayOfWeek, ShiftType, TimeOffStatus,
+)
+from .ehr import (
+    MedicalRecord, VitalSign, Diagnosis, Prescription, Allergy, Immunization, FamilyHistory,
+    VisitType, VitalSignUnit, AllergySeverity, DiagnosisType,
+)
+from .telemedicine import TelemedicineSession, SessionStatus
+from .pharmacy import PharmacyOrder, PharmacyOrderItem, DispenseStatus, DeliveryStatus
+from .emergency import EmergencyCase, AmbulanceDispatch, TriageLevel, EmergencyStatus, AmbulanceStatus
+from .lab_integration import (
+    LabTest, LabOrder, LabResult, ImagingStudy,
+    LabTestCategory, SpecimenType, OrderStatus,
+)
 
 __all__ = [
     "Clinic", "Doctor", "Patient",
@@ -26,4 +45,15 @@ __all__ = [
     "Questionnaire", "QuestionnaireResponse", "QuestionStatus",
     "Invoice", "InvoiceStatus",
     "InsuranceClaim", "InsuranceProvider", "ClaimStatus",
+    "MedicalRecord", "VitalSign", "Diagnosis", "Prescription", "Allergy", "Immunization", "FamilyHistory",
+    "VisitType", "VitalSignUnit", "AllergySeverity", "DiagnosisType",
+    "TelemedicineSession", "SessionStatus",
+    "PharmacyOrder", "PharmacyOrderItem", "DispenseStatus", "DeliveryStatus",
+    "EmergencyCase", "AmbulanceDispatch", "TriageLevel", "EmergencyStatus", "AmbulanceStatus",
+    "InventoryItem", "InventoryTransaction", "MedicalSupply", "Equipment",
+    "MedicineCategory", "TransactionType", "StockAlertLevel",
+    "DoctorSchedule", "ShiftOverride", "Unavailability",
+    "DayOfWeek", "ShiftType", "TimeOffStatus",
+    "LabTest", "LabOrder", "LabResult", "ImagingStudy",
+    "LabTestCategory", "SpecimenType", "OrderStatus",
 ]
