@@ -33,6 +33,7 @@ from .lab_integration import (
     LabTest, LabOrder, LabResult, ImagingStudy,
     LabTestCategory, SpecimenType, OrderStatus,
 )
+from .agent import Agent, Service, AgentService
 
 __all__ = [
     "Clinic", "Doctor", "Patient",
@@ -56,4 +57,5 @@ __all__ = [
     "DayOfWeek", "ShiftType", "TimeOffStatus",
     "LabTest", "LabOrder", "LabResult", "ImagingStudy",
     "LabTestCategory", "SpecimenType", "OrderStatus",
+    "Agent", "Service", "AgentService",
 ]

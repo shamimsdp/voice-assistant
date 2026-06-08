@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,54 +10,52 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle,
-  HelpCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import { useRequestOTP, useVerifyOTP } from "@/lib/auth-hooks";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated } = useAuthStore();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(1); // 1: Phone, 2: OTP
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [step, setStep] = useState(1);
 
-  // Simulated OTP code that displays as a system notice at the top
-  const [simulatedOTP, setSimulatedOTP] = useState("");
+  const requestOtp = useRequestOTP();
+  const verifyOtp = useVerifyOTP();
+
+  useEffect(() => {
+    if (isAuthenticated) router.push("/dashboard");
+  }, [isAuthenticated, router]);
 
   const handleSendOTP = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || phone.length < 10) {
-      setError("Please enter a valid Bangladeshi phone number");
+    if (!phone || phone.length < 11) {
+      requestOtp.error = null as any;
       return;
     }
-    setError("");
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setStep(2);
-      // Generate a mock 4-digit OTP code
-      const generated = Math.floor(1000 + Math.random() * 9000).toString();
-      setSimulatedOTP(generated);
-    }, 1200);
+    requestOtp.mutate(phone, {
+      onSuccess: () => setStep(2),
+    });
   };
 
   const handleVerifyOTP = (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp !== simulatedOTP) {
-      setError("Incorrect OTP verification code. Try again.");
-      return;
-    }
-    setError("");
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      // Route to dashboard
-      router.push("/dashboard");
-    }, 1000);
+    if (!otp || otp.length < 4) return;
+    verifyOtp.mutate(
+      { phone, otp },
+      {
+        onSuccess: (data) => {
+          login(data.access_token, data.user);
+          router.push("/dashboard");
+        },
+      }
+    );
   };
+
+  const error = requestOtp.error || verifyOtp.error;
 
   return (
     <motion.div
@@ -65,27 +63,29 @@ export default function LoginPage() {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-[#070b13] flex flex-col items-center justify-center p-4 font-sans text-slate-100"
     >
-      
-      {/* Visual Mock OTP Notification Banner at top */}
-      {step === 2 && simulatedOTP && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed top-5 max-w-sm w-full bg-[#0a1120] border border-emerald-500/30 p-3.5 rounded-2xl shadow-xl shadow-emerald-500/5 z-50"
-        >
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-              <Smartphone className="w-4 h-4" />
+      {/* Success notification banner */}
+      <AnimatePresence>
+        {step === 2 && requestOtp.isSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-5 max-w-sm w-full bg-[#0a1120] border border-emerald-500/30 p-3.5 rounded-2xl shadow-xl shadow-emerald-500/5 z-50"
+          >
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">OTP পাঠানো হয়েছে</h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  আপনার ফোনে ৪-সংখ্যার OTP কোড পাঠানো হয়েছে। দয়া করে নীচে লিখুন।
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">SMS Gateway Mock Notif</h4>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Shasthya Seba AI OTP for login is: <span className="font-bold font-mono text-emerald-400 text-sm tracking-widest">{simulatedOTP}</span>
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main card */}
       <motion.div
@@ -94,8 +94,6 @@ export default function LoginPage() {
         transition={{ duration: 0.4, delay: 0.1 }}
         className="w-full max-w-md bg-[#0a1120] border border-slate-800/80 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl relative overflow-hidden"
       >
-        
-        {/* Decorative glass glow backdrops */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -131,19 +129,26 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-[11px] font-semibold text-red-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {error}
-              </p>
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[11px] font-semibold text-red-400 flex items-center gap-1.5"
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {error.message}
+              </motion.p>
             )}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={requestOtp.isPending}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md shadow-emerald-500/5"
             >
-              {loading ? "Sending Code..." : "Send OTP Verification"}
-              <ArrowRight className="w-4 h-4" />
+              {requestOtp.isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Sending Code...</>
+              ) : (
+                <><Smartphone className="w-4 h-4" /> Send OTP Verification</>
+              )}
             </button>
           </form>
         ) : (
@@ -155,7 +160,7 @@ export default function LoginPage() {
                 <input
                   type="text"
                   required
-                  maxLength={4}
+                  maxLength={6}
                   placeholder="••••"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
@@ -166,26 +171,34 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-[11px] font-semibold text-red-400 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {error}
-              </p>
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[11px] font-semibold text-red-400 flex items-center gap-1.5"
+              >
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {error.message}
+              </motion.p>
             )}
 
             <div className="flex gap-3 mt-1">
               <button
                 type="button"
-                onClick={() => setStep(1)}
+                onClick={() => { setStep(1); setOtp(""); verifyOtp.reset(); }}
                 className="flex-1 py-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-[#070b13] border border-slate-800 hover:border-slate-700 transition-colors"
               >
                 Back
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={verifyOtp.isPending}
                 className="flex-[2] py-3 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md"
               >
-                {loading ? "Verifying..." : "Verify & Login"}
+                {verifyOtp.isPending ? (
+                  <><Loader2 className="w-4 h-4 animate-spin inline mr-1" /> Verifying...</>
+                ) : (
+                  "Verify & Login"
+                )}
               </button>
             </div>
           </form>
@@ -197,7 +210,6 @@ export default function LoginPage() {
             Clinic staff phone OTP dashboard access system.
           </p>
         </div>
-
       </motion.div>
     </motion.div>
   );

@@ -14,7 +14,10 @@ import {
   X,
   Stethoscope,
   Activity,
-  UserCheck
+  UserCheck,
+  Bot,
+  Briefcase,
+  Users,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -31,6 +34,9 @@ export default function DashboardLayout({
     { name: "Appointments", href: "/appointments", icon: CalendarDays },
     { name: "Call Logs", href: "/calls", icon: PhoneCall },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    { name: "Patients", href: "/patients", icon: Users },
+    { name: "Services", href: "/services", icon: Briefcase },
+    { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
   ];
 

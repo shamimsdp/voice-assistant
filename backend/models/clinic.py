@@ -37,6 +37,9 @@ class Clinic(Base):
     appointments: Mapped[list["Appointment"]] = relationship("Appointment", back_populates="clinic", lazy="select")  # noqa: F821
     call_logs: Mapped[list["CallLog"]] = relationship("CallLog", back_populates="clinic", lazy="select")  # noqa: F821
     users: Mapped[list["User"]] = relationship("User", back_populates="clinic", lazy="select")  # noqa: F821
+    services: Mapped[list["Service"]] = relationship("Service", back_populates="clinic", lazy="select")  # noqa: F821
+    agents: Mapped[list["Agent"]] = relationship("Agent", back_populates="clinic", lazy="select")  # noqa: F821
+    patients: Mapped[list["Patient"]] = relationship("Patient", back_populates="clinic", lazy="select")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<Clinic {self.name} ({self.phone})>"

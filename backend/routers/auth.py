@@ -101,7 +101,10 @@ async def request_otp(body: RequestOTPBody, db: AsyncSession = Depends(get_db)):
 
     # Send OTP via SMS
     msg = f"আপনার OTP: {otp}\nমেয়াদ: {settings.otp_expiry_minutes} মিনিট\nকাউকে শেয়ার করবেন না।"
-    await send_sms(body.phone, msg)
+    sent = await send_sms(body.phone, msg)
+
+    if not sent and settings.app_env == "development":
+        logger.warning("SMS not configured — OTP for dev use", otp=otp, phone=body.phone[-4:])
 
     logger.info("OTP sent", phone=body.phone[-4:])
     return {"message": "OTP পাঠানো হয়েছে।"}

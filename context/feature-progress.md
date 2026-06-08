@@ -26,9 +26,9 @@
 
 | Feature | Status | Backend | Frontend | Notes |
 |---------|--------|---------|----------|-------|
-| **AI Agents** | 🟠 PARTIAL | `gemini_service.py`, `voice_enhancements.py`, `symptom_matcher.py` — full voice pipeline | Voice tone selector in `/settings` only | Need a dedicated agent config page: prompt tuning, intent mapping, language model selection, fallback behaviors |
-| **Services** | 🟡 API DONE | Lab, pharmacy, telemedicine, emergency services all built | ❌ Not started | Need pages for configuring clinic services (lab test catalog, pharmacy pricing, telemedicine settings, emergency protocols) |
-| **Knowledge** | ❌ NOT STARTED | — | ❌ Not started | Medical knowledge base, FAQ management, clinic protocol docs — could feed into AI agent responses |
+| **AI Agents** | ✅ DONE | `GET/POST /api/agents/*`, `PUT/DELETE /api/agents/{id}`, `PATCH /api/agents/{id}/toggle`, `POST /api/agents/{id}/services` | `/agents` | 8 pre-defined agents + custom creation, activation toggle, service assignment, voice/tone/greeting/prompt config |
+| **Services** | ✅ DONE | `GET/POST /api/services/*`, `PUT/DELETE /api/services/{id}` | `/services` | Service catalog with categories (14 types), duration, pricing CRUD, search + category filter |
+| **Knowledge** | ❌ NOT STARTED | — | ❌ Not started | FAQ/Q&A knowledge base for AI agents — predefined + custom Q&A by category |
 | **Website** | ❌ NOT STARTED | — | ❌ Not started | Clinic website builder or landing page config (hours, doctors, contact info) |
 
 ---

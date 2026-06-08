@@ -65,7 +65,7 @@ def _make_appt(**kwargs):
 class TestInvoiceGeneration:
     async def test_generates_invoice_with_defaults(self):
         appt = _make_appt()
-        patient = Patient(id="pat-1", name="Test", phone="01711111111")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", name="Test", phone="01711111111")
         db = _mock_db([])
 
         invoice = await generate_invoice(appt, patient, db)
@@ -79,7 +79,7 @@ class TestInvoiceGeneration:
 
     async def test_invoice_with_tax_and_discount(self):
         appt = _make_appt()
-        patient = Patient(id="pat-1", name="Test", phone="01711111111")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", name="Test", phone="01711111111")
         db = _mock_db([])
 
         invoice = await generate_invoice(appt, patient, db, tax_pct=10.0, discount=50)
@@ -91,7 +91,7 @@ class TestInvoiceGeneration:
 
     async def test_invoice_custom_line_items(self):
         appt = _make_appt()
-        patient = Patient(id="pat-1", name="Test", phone="01711111111")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", name="Test", phone="01711111111")
         db = _mock_db([])
 
         items = [
@@ -271,7 +271,7 @@ class TestPaymentHistory:
         appt = _make_appt(payment_status=PaymentStatus.PAID)
         db = _mock_db([appt])
 
-        patient = Patient(id="pat-1", name="Rahim", phone="01711111111")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", name="Rahim", phone="01711111111")
         db.get.return_value = patient
 
         history = await get_payment_history("clinic-1", db, days=30)

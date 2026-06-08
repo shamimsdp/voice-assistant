@@ -21,6 +21,9 @@ from routers.ehr import router as ehr_router
 from routers.telemedicine import router as telemedicine_router
 from routers.pharmacy import router as pharmacy_router
 from routers.emergency import router as emergency_router
+from routers.agents import router as agents_router
+from routers.services import router as services_router
+from routers.patients import router as patients_router
 
 # ── Structured logging ────────────────────────────────────────────────────────
 structlog.configure(
@@ -88,6 +91,9 @@ app.include_router(ehr_router, prefix="/api/ehr", tags=["EHR"])
 app.include_router(telemedicine_router, prefix="/api/telemedicine", tags=["Telemedicine"])
 app.include_router(pharmacy_router, prefix="/api/pharmacy", tags=["Pharmacy"])
 app.include_router(emergency_router, prefix="/api/emergency", tags=["Emergency"])
+app.include_router(agents_router, prefix="/api/agents", tags=["Agents"])
+app.include_router(services_router, prefix="/api/services", tags=["Services"])
+app.include_router(patients_router, prefix="/api/patients", tags=["Patients"])
 
 
 @app.get("/", tags=["Health"])

@@ -7,6 +7,32 @@
 
 ---
 
+## What These Healthcare AI Agents Do
+
+| Capability | How Our System Delivers It |
+|------------|---------------------------|
+| **Manage patient appointments & scheduling** | AI voice agent books/reschedules/cancels via phone. Dashboard for manual management. Backend: appointment CRUD + advanced (waiting list, recurring, group bookings, conflict detection). |
+| **Handle medical inquiries & patient support** | Gemini 2.0 Flash LLM with 8 medical intents, symptom-to-doctor matching, clinic info queries, doctor schedule lookups. |
+| **Automate healthcare communication workflows** | SMS service (Twilio + SSL Wireless), smart reminders based on no-show risk, bKash payment links, NPS surveys. |
+| **Assist with patient follow-ups & reminders** | No-show risk prediction, automated reminder SMS, follow-up scheduling, immunization due-date tracking. |
+| **Improve medical office management & operations** | Full dashboard: EHR, lab orders, pharmacy dispensing, inventory, staff scheduling, billing, emergency coordination. |
+| **Support healthcare customer service automation** | 24/7 AI receptionist with sentiment-aware responses, emergency keyword detection, multi-turn conversation. |
+
+## What You'll Learn From This Project
+
+- Build Healthcare AI Voice Agents with modern LLMs (Gemini 2.0 Flash)
+- Create real-time medical voice conversations (STT → LLM → TTS pipeline with Twilio)
+- Build a Healthcare Management SaaS platform from scratch
+- Manage patients, appointments, and medical workflows end-to-end
+- Integrate Supabase-style auth (OTP + JWT) and PostgreSQL for healthcare data
+- Build scalable medical industry SaaS applications (FastAPI async + SQLAlchemy 2.0)
+- Create reusable healthcare AI systems (modular agent architecture with tool calling)
+- Build a modern frontend with Next.js 16 + React 19 + Tailwind v4 + framer-motion
+- Handle AI prompts, automation, and healthcare business logic
+- Manage multi-tenant clinic data with role-based access control
+
+---
+
 ## CLINICAL
 
 ---
@@ -249,9 +275,9 @@ Not built. No models, services, or endpoints exist.
 
 ### 8. AI Agents
 
-**Status:** 🟠 **PARTIAL — Voice pipeline exists, no dedicated config page**
+**Status:** ✅ **DONE — Full agent management with 8 pre-defined agents + custom creation**
 
-**Description:** Configure the AI voice agent — prompt tuning, language model selection, intent mapping, fallback behaviors, greeting messages.
+**Description:** AI voice agent management system. 8 pre-defined agent personas (Front Desk, Emergency, General Health, Pediatric, Nutrition, Mental Health, Dental, Follow-up) plus custom agent creation. Each agent has configurable voice, tone, greeting, system prompt, and service assignments. Activation toggle per agent.
 
 #### Backend
 | Service | What it does |
@@ -293,17 +319,14 @@ Incoming Call (Twilio)
 ```
 
 #### Frontend
-**Current:** Only a voice tone dropdown in `/settings` (3 options: Polite/Clinical/Formal).
+| Section | Route | Key UI Components | Data Source |
+|---------|-------|-------------------|-------------|
+| Agent Grid | `/agents` | Agent cards with name, status, service count, greeting preview, active/inactive badge, toggle, edit button | `GET /api/agents` |
+| Create Agent | Modal | Name, voice selector, tone selector, greeting textarea, system prompt editor, service assignment checkboxes | `POST /api/agents` + `POST /api/agents/{id}/services` |
+| Edit Agent | Modal | Same as create, pre-filled with current values, service assignment | `PUT /api/agents/{id}` |
+| Toggle Active | Inline | Power/power-off icon button on each card | `PATCH /api/agents/{id}/toggle` |
 
-**Needed Page:**
-| Section | Key UI to Build | Priority |
-|---------|-----------------|----------|
-| Agent Profile | Agent name, greeting message (EN+BN), language selection (bn-BD/en-US/both) | High |
-| Prompt Tuning | System prompt editor, personality tone slider, formality level | Medium |
-| Intent Mapping | View/edit tool descriptions and trigger phrases per intent | Medium |
-| Model Selection | Gemini model version, temperature slider, max tokens | Low |
-| Fallback Behaviors | What agent says when it doesn't understand, escalation rules | Low |
-| Call Script Preview | Test the agent with sample inputs, see STT→LLM→TTS pipeline output | Low |
+**Pre-defined agents auto-seeded on first `GET /api/agents` call.**
 
 ---
 
@@ -715,24 +738,25 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 3 | Call Logs | ✅ DONE | 2 endpoints | `/calls` | Connect to real APIs |
 | 4 | Appointments | ✅ DONE | 5 + 18 endpoints | `/appointments` | Connect to real APIs |
 | 5 | Schedule | 🟡 API DONE | 7 endpoints | ❌ None | **HIGH** |
-| 6 | Patients | 🟡 API DONE | 12 EHR endpoints | ❌ None | **HIGH** |
+| 6 | Patients | ✅ DONE | `GET/POST/PUT/DELETE /api/patients` + search | `/patients` with list, register modal, detail slideover | **HIGH** |
 | 7 | Settings | ✅ DONE | 5 endpoints | `/settings` | Connect to real APIs |
-| 8 | AI Agents | 🟠 Partial | Voice pipeline exists | Tone selector only | Medium |
-| 9 | Notifications | 🟠 Partial | SMS service + 1 endpoint | SMS button only | Medium |
-| 10 | Inventory | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
-| 11 | Pharmacy | 🟡 API DONE | 4 endpoints | ❌ None | **HIGH** |
-| 12 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
-| 13 | EHR / Medical Records | 🟡 API DONE | 12 endpoints | ❌ None | **HIGH** |
-| 14 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
-| 15 | Doctor Management | 🟡 API DONE | 3 endpoints | ❌ None | **HIGH** |
-| 16 | Emergency / ER | 🟡 API DONE | 6 endpoints | ❌ None | Medium |
-| 17 | Telemedicine | 🟡 API DONE | 3 endpoints | ❌ None | Medium |
-| 18 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
-| 19 | Support | ❌ Not started | — | ❌ None | Low |
-| 20 | Knowledge Base | ❌ Not started | — | ❌ None | Low |
-| 21 | Website Builder | ❌ Not started | — | ❌ None | Low |
-| 22 | Patient Portal | ❌ Not started | — | ❌ None | Low |
-| 23 | Auth / Login | ✅ DONE | 3 endpoints | `/login` | Connect to real APIs |
+| 8 | AI Agents | ✅ Done | `/api/agents/*` + 8 pre-defined agents | `/agents` with grid, create, edit, toggle, service assignment | Medium |
+| 9 | Services | ✅ Done | `/api/services/*` with 14 categories | `/services` with catalog, CRUD modal, search, category filter | Medium |
+| 10 | Notifications | 🟠 Partial | SMS service + 1 endpoint | SMS button only | Medium |
+| 11 | Inventory | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
+| 12 | Pharmacy | 🟡 API DONE | 4 endpoints | ❌ None | **HIGH** |
+| 13 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
+| 14 | EHR / Medical Records | 🟡 API DONE | 12 endpoints | ❌ None | **HIGH** |
+| 15 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
+| 16 | Doctor Management | 🟡 API DONE | 3 endpoints | ❌ None | **HIGH** |
+| 17 | Emergency / ER | 🟡 API DONE | 6 endpoints | ❌ None | Medium |
+| 18 | Telemedicine | 🟡 API DONE | 3 endpoints | ❌ None | Medium |
+| 19 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
+| 20 | Support | ❌ Not started | — | ❌ None | Low |
+| 21 | Knowledge Base | ❌ Not started | — | ❌ None | Low |
+| 22 | Website Builder | ❌ Not started | — | ❌ None | Low |
+| 23 | Patient Portal | ❌ Not started | — | ❌ None | Low |
+| 24 | Auth / Login | ✅ DONE | 3 endpoints | `/login` | Connect to real APIs |
 
 ---
 

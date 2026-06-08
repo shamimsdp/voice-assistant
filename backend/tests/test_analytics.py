@@ -45,7 +45,7 @@ class TestNoShowPrediction:
             scheduled_at=datetime(2026, 6, 10, 11, 0),
             duration_min=20,
         )
-        patient = Patient(id="pat-1", phone="01711111111", name="Test")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", phone="01711111111", name="Test")
         db = _mock_db([])
 
         risk = await predict_no_show_risk(appt, patient, db)
@@ -63,7 +63,7 @@ class TestNoShowPrediction:
             scheduled_at=datetime(2026, 6, 10, 8, 30),
             duration_min=20,
         )
-        patient = Patient(id="pat-1", phone="01711111111", name="Test")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", phone="01711111111", name="Test")
         db = _mock_db([])
         morning = await predict_no_show_risk(appt, patient, db)
 
@@ -101,7 +101,7 @@ class TestNoShowPrediction:
             scheduled_at=datetime(2026, 6, 15, 10, 0),
             duration_min=20,
         )
-        patient = Patient(id="pat-1", phone="01711111111", name="Test")
+        patient = Patient(id="pat-1", clinic_id="clinic-1", phone="01711111111", name="Test")
 
         risk = await predict_no_show_risk(appt, patient, db)
         assert risk > 0
