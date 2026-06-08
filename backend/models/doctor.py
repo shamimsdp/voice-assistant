@@ -31,6 +31,9 @@ class Doctor(Base):
     # Consultation fee in BDT
     consultation_fee: Mapped[int] = mapped_column(default=500)
 
+    # Symptom keywords for automatic doctor matching: ["chest pain", "fever", "cough", ...]
+    symptom_keywords: Mapped[dict] = mapped_column(JSON, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships

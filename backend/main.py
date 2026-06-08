@@ -12,6 +12,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from config import get_settings
 from db.base import init_db
 from routers import calls, appointments, clinics, payments, auth, webhooks, analytics
+from routers.advanced_appointments import router as advanced_appointments_router
 
 # ── Structured logging ────────────────────────────────────────────────────────
 structlog.configure(
@@ -70,6 +71,7 @@ app.include_router(clinics.router,      prefix="/api/clinics",       tags=["Clin
 app.include_router(payments.router,     prefix="/api/payments",      tags=["Payments"])
 app.include_router(webhooks.router,     prefix="/webhooks",          tags=["Webhooks"])
 app.include_router(analytics.router,    prefix="/api/analytics",     tags=["Analytics"])
+app.include_router(advanced_appointments_router, prefix="/api/advanced-appointments", tags=["Advanced Appointments"])
 
 
 @app.get("/", tags=["Health"])
