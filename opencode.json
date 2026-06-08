@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "feature-builder": {
+      "description": "Builds complete features (backend + frontend + tests) for the clinic management app. When you say a feature name like 'Patients', 'Schedule', 'Inventory', 'Pharmacy', 'Lab', 'EHR', 'Billing', 'Doctor Management', 'Emergency', 'Telemedicine', or 'Settings', this agent reads the feature specs from feature-list.md and feature-progress.md, then implements everything.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "task": "allow",
+        "write": "allow"
+      }
+    }
+  },
+  "instructions": [
+    "AGENTS.md",
+    "frontend/AGENTS.md"
+  ]
+}
