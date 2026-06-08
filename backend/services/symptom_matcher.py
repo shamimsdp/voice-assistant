@@ -3,8 +3,7 @@ services/symptom_matcher.py — Doctor specialization matching based on patient 
 Maps patient-reported symptoms to the most appropriate doctor
 """
 import structlog
-import re
-from typing import List, Dict, Optional
+from typing import List, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from models.doctor import Doctor
@@ -14,7 +13,6 @@ logger = structlog.get_logger()
 SYMPTOM_TO_SPECIALTY: Dict[str, List[str]] = {
     "fever": ["medicine", "general"],
     "cough": ["medicine", "chest", "general"],
-    "cold": ["medicine", "ent", "general"],
     "cold": ["medicine", "ent", "general"],
     "sore throat": ["ent", "medicine"],
     "headache": ["neurology", "medicine", "general"],

@@ -6,7 +6,7 @@ import uuid
 import enum
 from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime, Integer, Text, ForeignKey, Enum, JSON, Date
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship as sa_relationship
 from db.base import Base
 
 
@@ -37,9 +37,9 @@ class WaitingListEntry(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    clinic: Mapped["Clinic"] = relationship("Clinic")
-    doctor: Mapped["Doctor"] = relationship("Doctor")
-    patient: Mapped["Patient"] = relationship("Patient")
+    clinic: Mapped["Clinic"] = sa_relationship("Clinic")  # noqa: F821
+    doctor: Mapped["Doctor"] = sa_relationship("Doctor")  # noqa: F821
+    patient: Mapped["Patient"] = sa_relationship("Patient")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<WaitingList {self.id[:8]} — Dr.{self.doctor_id[:8]} on {self.preferred_date}>"
@@ -68,9 +68,9 @@ class RecurringAppointmentTemplate(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    clinic: Mapped["Clinic"] = relationship("Clinic")
-    doctor: Mapped["Doctor"] = relationship("Doctor")
-    patient: Mapped["Patient"] = relationship("Patient")
+    clinic: Mapped["Clinic"] = sa_relationship("Clinic")  # noqa: F821
+    doctor: Mapped["Doctor"] = sa_relationship("Doctor")  # noqa: F821
+    patient: Mapped["Patient"] = sa_relationship("Patient")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<RecurringTemplate {self.id[:8]} — freq={self.frequency} at {self.time_of_day}>"
@@ -92,10 +92,10 @@ class GroupBooking(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    clinic: Mapped["Clinic"] = relationship("Clinic")
-    doctor: Mapped["Doctor"] = relationship("Doctor")
-    primary_patient: Mapped["Patient"] = relationship("Patient", foreign_keys=[primary_patient_id])
-    members: Mapped[list["GroupBookingMember"]] = relationship("GroupBookingMember", back_populates="group_booking", lazy="select")  # noqa: F821
+    clinic: Mapped["Clinic"] = sa_relationship("Clinic")  # noqa: F821
+    doctor: Mapped["Doctor"] = sa_relationship("Doctor")  # noqa: F821
+    primary_patient: Mapped["Patient"] = sa_relationship("Patient", foreign_keys=[primary_patient_id])  # noqa: F821
+    members = sa_relationship("GroupBookingMember", back_populates="booking_ref", lazy="select")
 
     def __repr__(self) -> str:
         return f"<GroupBooking {self.id[:8]} — {self.slot_type} ({self.max_members} max)>"
@@ -109,12 +109,12 @@ class GroupBookingMember(Base):
     patient_id: Mapped[str] = mapped_column(String(36), ForeignKey("patients.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     age: Mapped[int] = mapped_column(Integer, nullable=True)
-    relationship: Mapped[str] = mapped_column(String(50), nullable=True)
+    relationship_col: Mapped[str] = mapped_column("relationship", String(50), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    group_booking = relationship("GroupBooking", back_populates="members")
-    patient = relationship("Patient")
+    booking_ref = sa_relationship("GroupBooking", back_populates="members")
+    patient = sa_relationship("Patient")
 
 
 class QuestionStatus(str, enum.Enum):
@@ -138,7 +138,7 @@ class Questionnaire(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    clinic: Mapped["Clinic"] = relationship("Clinic")
+    clinic: Mapped["Clinic"] = sa_relationship("Clinic")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<Questionnaire {self.id[:8]} — {self.title}>"
@@ -158,9 +158,9 @@ class QuestionnaireResponse(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    questionnaire: Mapped["Questionnaire"] = relationship("Questionnaire")
-    appointment: Mapped["Appointment"] = relationship("Appointment")
-    patient: Mapped["Patient"] = relationship("Patient")
+    questionnaire: Mapped["Questionnaire"] = sa_relationship("Questionnaire")  # noqa: F821
+    appointment: Mapped["Appointment"] = sa_relationship("Appointment")  # noqa: F821
+    patient: Mapped["Patient"] = sa_relationship("Patient")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<QuestionnaireResponse {self.id[:8]} — status={self.status}>"

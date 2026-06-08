@@ -3,7 +3,7 @@ models/doctor.py — Doctor ORM model
 """
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Boolean, DateTime, Text, JSON, ForeignKey
+from sqlalchemy import String, Boolean, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
 

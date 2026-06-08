@@ -4,17 +4,15 @@ Recurring appointments, waiting list, conflict detection, duration estimation
 """
 import structlog
 from datetime import datetime, timedelta, date
-from typing import List, Optional, Dict, Tuple
+from typing import List, Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import select
 
 from models.appointment import Appointment, AppointmentStatus
 from models.advanced_appointments import (
     WaitingListEntry, WaitingListStatus,
     RecurringAppointmentTemplate,
 )
-from models.patient import Patient
 from models.doctor import Doctor
 from utils.prayer_times import should_avoid_scheduling
 
@@ -92,7 +90,6 @@ async def generate_recurring_instances(
     Generate individual Appointment instances from a recurring template.
     Returns the list of created appointments.
     """
-    from datetime import date as date_type
 
     current = template.start_date
     if isinstance(current, datetime):
@@ -209,11 +206,11 @@ async def promote_from_waiting_list(
     return entry
 
 
-async def estimate_appointment_duration(
+def estimate_appointment_duration(
     patient_id: str,
     doctor: Doctor,
     complaint_text: str,
-    db: AsyncSession,
+    db: Optional[AsyncSession] = None,
 ) -> int:
     """
     Estimate appointment duration based on complaint type and patient history.

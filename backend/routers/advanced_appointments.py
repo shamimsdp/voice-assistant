@@ -6,25 +6,23 @@ from datetime import datetime, date
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from typing import Optional, List
 
 from db.base import get_db
-from models.appointment import Appointment, AppointmentStatus
+from models.appointment import Appointment
 from models.advanced_appointments import (
     WaitingListEntry, WaitingListStatus,
     RecurringAppointmentTemplate,
     GroupBooking, GroupBookingMember,
     Questionnaire, QuestionnaireResponse, QuestionStatus,
 )
-from models.patient import Patient
 from models.doctor import Doctor
 from routers.auth import get_current_user
 from models.user import User
 from services.advanced_appointments import (
     detect_conflicts, find_available_slots,
-    generate_recurring_instances, promote_from_waiting_list,
-    estimate_appointment_duration,
+    generate_recurring_instances, estimate_appointment_duration,
 )
 from services.symptom_matcher import find_matching_doctors
 
@@ -314,7 +312,7 @@ async def list_recurring_templates(
     """List recurring appointment templates."""
     query = select(RecurringAppointmentTemplate).where(
         RecurringAppointmentTemplate.clinic_id == current_user.clinic_id,
-        RecurringAppointmentTemplate.is_active == True,
+        RecurringAppointmentTemplate.is_active,
     )
     if doctor_id:
         query = query.where(RecurringAppointmentTemplate.doctor_id == doctor_id)
@@ -456,7 +454,7 @@ async def list_questionnaires(
     result = await db.execute(
         select(Questionnaire).where(
             Questionnaire.clinic_id == current_user.clinic_id,
-            Questionnaire.is_active == True,
+            Questionnaire.is_active,
         )
     )
     questionnaires = result.scalars().all()
@@ -480,7 +478,6 @@ async def submit_questionnaire_response(
     current_user: User = Depends(get_current_user),
 ):
     """Submit a patient's questionnaire responses."""
-    from services.sms_service import send_appointment_sms
 
     response = QuestionnaireResponse(
         questionnaire_id=body.questionnaire_id,

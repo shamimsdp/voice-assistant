@@ -2,9 +2,8 @@
 Tests for advanced appointments — waiting list, conflict detection,
 symptom matching, recurring appointments, duration estimation
 """
-import pytest
-from datetime import datetime, date, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import datetime, date
+
 
 from services.advanced_appointments import (
     detect_conflicts,
@@ -149,6 +148,7 @@ class TestWaitingList:
             preferred_date=date(2026, 6, 15),
             preferred_time_start="09:00",
             preferred_time_end="12:00",
+            status=WaitingListStatus.WAITING,
         )
         assert entry.status == WaitingListStatus.WAITING
         assert entry.clinic_id == "clinic-1"
@@ -159,6 +159,7 @@ class TestWaitingList:
             doctor_id="doc-1",
             patient_id="patient-1",
             preferred_date=date(2026, 6, 15),
+            status=WaitingListStatus.WAITING,
         )
         entry.status = WaitingListStatus.NOTIFIED
         assert entry.status == WaitingListStatus.NOTIFIED
@@ -177,8 +178,9 @@ class TestRecurringTemplate:
             time_of_day="10:00",
             duration_min=20,
             frequency="weekly",
+            is_active=True,
         )
-        assert template.is_active == True
+        assert template.is_active
         assert template.frequency == "weekly"
 
     def test_recurring_template_defaults(self):
@@ -190,6 +192,7 @@ class TestRecurringTemplate:
             time_of_day="09:30",
             duration_min=20,
             frequency="daily",
+            interval=1,
         )
         assert template.interval == 1
         assert template.end_date is None
