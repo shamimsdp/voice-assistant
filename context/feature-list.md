@@ -156,7 +156,7 @@
 
 ### 5. Schedule
 
-**Status:** 🟡 **API DONE — No frontend**
+**Status:** ✅ **DONE**
 
 **Description:** Weekly doctor schedule view, availability checking, time-off requests, shift overrides.
 
@@ -177,14 +177,9 @@
 - `ShiftOverride`: shift_date, shift_type, start_time, end_time, override_type, reason
 
 #### Frontend
-**Needed Pages:**
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Doctor Schedule View | `/schedule` | Weekly calendar grid showing all doctors' shifts, room numbers, patient capacity. Toggle by doctor. | High |
-| Availability Checker | `/schedule/availability` | Date picker + doctor selector, shows open/closed slots with color coding | High |
-| Time-Off Request | `/schedule/time-off` | Form: doctor select, date range, reason, type (vacation/sick/personal). Approval workflow. | Medium |
-| Time-Off Approvals | `/schedule/time-off/approvals` | Admin list of pending requests with approve/reject buttons | Medium |
-| Shift Override | `/schedule/override` | Admin form: doctor, date, new shift times, reason | Low |
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Schedule Calendar | `/schedule` | Month calendar grid with day cell details (appointment count, doctor on duty, Jummah indicator). Day detail panel with doctor schedules + appointments list. Time-off tab with approve/reject. Modals: Book appointment, Request time off, Add schedule. | ✅ Built |
 
 ---
 
@@ -660,7 +655,7 @@ Not built. The existing landing page (`/`) is static.
 
 ### 20. Doctor Management
 
-**Status:** 🟡 **API DONE** — 3 endpoints in `/api/clinics/doctors`
+**Status:** ✅ **DONE**
 
 **Description:** Add/edit/deactivate doctors.
 
@@ -672,11 +667,10 @@ Not built. The existing landing page (`/`) is static.
 
 **Model:** `Doctor`: name (EN+BN), specialty, qualification, phone, consultation_fee, slot_duration_minutes, available_slots (JSON), symptom_keywords (JSON)
 
-**Frontend Needed:**
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Doctor List | `/doctors` | Table with name, specialty, fee, slots, active status. Add/Edit/Deactivate buttons | High |
-| Add/Edit Doctor | `/doctors/new`, `/doctors/{id}/edit` | Form: name EN+BN, specialty, qualification, phone, fee, slot duration, working hours, symptom keywords | High |
+**Frontend:**
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Doctor Management | `/doctors` | Card grid with search, active/inactive filter toggle, add/edit modal (name EN+BN, specialty, qualification, phone, fee, slot duration), activate/deactivate toggle | ✅ Built |
 
 ---
 
@@ -737,7 +731,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 2 | Analytics | ✅ DONE | 11 endpoints | `/analytics` | Connect to real APIs |
 | 3 | Call Logs | ✅ DONE | 2 endpoints | `/calls` | Connect to real APIs |
 | 4 | Appointments | ✅ DONE | 5 + 18 endpoints | `/appointments` | Connect to real APIs |
-| 5 | Schedule | 🟡 API DONE | 7 endpoints | ❌ None | **HIGH** |
+| 5 | Schedule | ✅ DONE | 7 endpoints | `/schedule` with month calendar, day detail, time-off tab, book/create/time-off modals | **HIGH** |
 | 6 | Patients | ✅ DONE | `GET/POST/PUT/DELETE /api/patients` + search | `/patients` with list, register modal, detail slideover | **HIGH** |
 | 7 | Settings | ✅ DONE | 5 endpoints | `/settings` | Connect to real APIs |
 | 8 | AI Agents | ✅ Done | `/api/agents/*` + 8 pre-defined agents | `/agents` with grid, create, edit, toggle, service assignment | Medium |
@@ -748,7 +742,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 13 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
 | 14 | EHR / Medical Records | 🟡 API DONE | 12 endpoints | ❌ None | **HIGH** |
 | 15 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
-| 16 | Doctor Management | 🟡 API DONE | 3 endpoints | ❌ None | **HIGH** |
+| 16 | Doctor Management | ✅ DONE | 3 endpoints | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle | **HIGH** |
 | 17 | Emergency / ER | 🟡 API DONE | 6 endpoints | ❌ None | Medium |
 | 18 | Telemedicine | 🟡 API DONE | 3 endpoints | ❌ None | Medium |
 | 19 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
@@ -763,8 +757,8 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 ## BUILD ORDER (Recommended)
 
 ### Phase 1 — High-Value Frontend Pages (backends already built)
-1. **Patients** — List/search, registration, detail with EHR tabs
-2. **Schedule** — Weekly doctor schedule view, time-off requests
+1. **Patients** — ✅ Built: list/search, registration modal, detail slideover
+2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
 3. **Inventory** — Stock levels, transactions, alerts
 4. **Pharmacy** — Order creation and management
 5. **Lab** — Test catalog, order lab tests, view results
@@ -779,11 +773,10 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 12. **Login** → `POST /api/auth/request-otp`, `POST /api/auth/verify-otp`
 
 ### Phase 3 — Medium Complexity
-13. **Doctor Management** — Full CRUD page
+13. **Doctor Management** — ✅ Built: card grid, search, add/edit modal, toggle
 14. **Emergency** — ER dashboard + ambulance dispatch
 15. **Telemedicine** — Session scheduling + video call integration
-16. **Staff Scheduling** — Schedule calendar + approval workflows
-17. **AI Agents** — Dedicated config page
+16. **AI Agents** — ✅ Built: config page with grid, toggle, service assignment
 18. **Notifications** — In-app notification center
 
 ### Phase 4 — Advanced / New Builds

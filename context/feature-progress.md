@@ -16,8 +16,8 @@
 | **Analytics** | ✅ DONE | `GET /api/analytics/*`, `GET /api/analytics/v2/*` | `/analytics` | KPIs, trends, demographics, latency, sentiment, recharts |
 | **Call Log** | ✅ DONE | `GET /api/calls`, `GET /api/calls/{id}` | `/calls` | Transcripts, sentiment filtering, audio waveform |
 | **Appointments** | ✅ DONE | `GET/POST /api/appointments/*`, `GET/POST /api/advanced-appointments/*` | `/appointments` | CRUD, filters, booking modal with zod validation |
-| **Schedule** | 🟡 API DONE | `staff_scheduling_service.py` — weekly schedules, availability, time-off, shift overrides (`/api/staff-scheduling/*`) | ❌ Not started | Need a doctor schedule view + time-off request UI |
-| **Patients** | 🟡 API DONE | `Patient` model exists, EHR service has patient summary (`/api/ehr/patients/{id}/summary`) | ❌ Not started | Need patient list, registration, search, detail/history page |
+| **Schedule** | ✅ DONE | `staff_scheduling_service.py` — weekly schedules, availability, time-off, shift overrides (`/api/staff-scheduling/*`) | `/schedule` | Month calendar grid, day detail panel, time-off tab, book/create/time-off modals |
+| **Patients** | ✅ DONE | `Patient` model with `clinic_id` + `email`, `GET/POST/PUT/DELETE /api/patients` | `/patients` | Patient list with search, registration modal, detail slideover |
 | **Support** | ❌ NOT STARTED | — | ❌ Not started | Ticketing/help system for clinic staff |
 
 ---
@@ -58,7 +58,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 | **Invoice / Billing** | `/api/payments/*` | 11 endpoints — invoices, insurance claims, financial reports, payment history | Billing page with invoice creation + payment history |
 | **Advanced Appointments** | `/api/advanced-appointments/*` | 18 endpoints — symptom matching, conflict detection, waiting list, recurring, group bookings, questionnaires | Waiting list management, recurring templates, group booking, pre-visit questionnaires |
 | **Analytics v2** | `/api/analytics/v2/*` | 8 endpoints — full KPIs, demographics, trends, predictive staffing, outbreak detection, no-show risk, NPS | Extended analytics dashboard with predictive insights |
-| **Doctor Management** | `GET/POST/DELETE /api/clinics/doctors` | CRUD for doctors | Doctor list + add/edit page |
+| **Doctor Management** | ✅ DONE | `GET/POST/DELETE /api/clinics/doctors` | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle |
 
 ---
 
@@ -82,22 +82,22 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 ## Build Order (Suggested)
 
 ### Phase 1 — High-Value Frontend Pages (backends already built)
-1. **Patients** — List/search patients, registration form, detail page with EHR tabs
-2. **Schedule** — Weekly doctor schedule view, time-off request form
-3. **Pharmacy** — Order list, create/manage pharmacy orders
-4. **Lab** — Test catalog, order lab tests, view results
-5. **Inventory** — Stock levels, transactions, alerts
+1. **Patients** — ✅ Built: list/search, register modal, detail slideover
+2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
+3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
+4. **Pharmacy** — Order list, create/manage pharmacy orders
+5. **Lab** — Test catalog, order lab tests, view results
+6. **Inventory** — Stock levels, transactions, alerts
 
 ### Phase 2 — Medium Complexity
-6. **Emergency** — Emergency cases dashboard, ambulance dispatch
-7. **Telemedicine** — Session scheduling, video call integration
-8. **Billing** — Invoice creation, payment history, insurance claims
-9. **AI Agents** — Dedicated config page (prompts, intents, model selection)
-10. **Notifications** — In-app notification center, configurable triggers
+7. **Emergency** — Emergency cases dashboard, ambulance dispatch
+8. **Telemedicine** — Session scheduling, video call integration
+9. **Billing** — Invoice creation, payment history, insurance claims
+10. **AI Agents** — ✅ Built: grid, create/edit, toggle, service assignment
+11. **Notifications** — In-app notification center, configurable triggers
 
 ### Phase 3 — Advanced
-11. **Knowledge** — Medical knowledge base management
-12. **Services** — Configure all clinic services from one page
+12. **Knowledge** — Medical knowledge base management
 13. **Website** — Clinic public website config
 14. **Support** — Internal ticketing system
 15. **Patient Portal** — Patient self-service login
@@ -108,7 +108,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 **Backend**: 50+ API endpoints across 15 router groups. Full coverage: auth, calls, appointments (basic + advanced), clinics, payments, analytics (v1 + v2), EHR, pharmacy, emergency, telemedicine, lab integration, staff scheduling, inventory, webhooks/streaming.
 
-**Frontend**: 7 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Call Logs (`/calls`), Analytics (`/analytics`), Settings (`/settings`). Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
+**Frontend**: 11 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Schedule (`/schedule`), Call Logs (`/calls`), Analytics (`/analytics`), Patients (`/patients`), Doctors (`/doctors`), Services (`/services`), AI Agents (`/agents`), Settings (`/settings`). Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
 
 **Testing**: 144 passing backend tests (Python/pytest).
 

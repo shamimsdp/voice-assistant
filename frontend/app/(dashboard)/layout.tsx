@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarClock,
   PhoneCall,
   BarChart3,
   Settings as SettingsIcon,
@@ -32,9 +33,11 @@ export default function DashboardLayout({
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Appointments", href: "/appointments", icon: CalendarDays },
+    { name: "Schedule", href: "/schedule", icon: CalendarClock },
     { name: "Call Logs", href: "/calls", icon: PhoneCall },
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
     { name: "Patients", href: "/patients", icon: Users },
+    { name: "Doctors", href: "/doctors", icon: Stethoscope },
     { name: "Services", href: "/services", icon: Briefcase },
     { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
