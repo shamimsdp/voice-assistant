@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Search,
@@ -15,6 +16,7 @@ import {
   ChevronRight,
   History,
   UserCheck,
+  ExternalLink,
 } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -44,6 +46,7 @@ const defaultForm = {
 };
 
 export default function PatientsPage() {
+  const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -164,7 +167,15 @@ export default function PatientsPage() {
 
               <div className="mt-3 pt-3 border-t border-slate-800/40 flex items-center justify-between">
                 <span className="text-[10px] text-slate-600">Registered {formatDate(p.created_at)}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); router.push(`/patients/${p.id}`); }}
+                    className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" /> EHR
+                  </button>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                </div>
               </div>
             </motion.div>
           ))}

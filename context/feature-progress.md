@@ -48,7 +48,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 | Module | API Prefix | Endpoints | What Frontend Needs |
 |--------|-----------|-----------|---------------------|
-| **EHR / Medical Records** | `/api/ehr/*` | 12 endpoints — records, vitals, diagnoses, prescriptions, allergies, immunizations, family history, patient summary | Patient detail page with tabs for each record type |
+| **EHR / Medical Records** | ✅ DONE | `/api/ehr/*` — 12 endpoints | `/patients/{id}` with 8-tab detail page (Summary, Records, Vitals, Diagnoses, Prescriptions, Allergies, Immunizations, Family History) |
 | **Pharmacy / Dispensary** | `/api/pharmacy/*` | 4 endpoints — order creation, listing, items, dispense | Pharmacy order management page |
 | **Lab Integration** | `/api/lab/*` | 9 endpoints — test catalog, orders, results, imaging | Lab ordering + results viewing page |
 | **Emergency & Triage** | `/api/emergency/*` | 6 endpoints — cases, ambulance dispatch | Emergency dashboard + case detail page |
@@ -85,16 +85,17 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 1. **Patients** — ✅ Built: list/search, register modal, detail slideover
 2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
 3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
-4. **Pharmacy** — Order list, create/manage pharmacy orders
-5. **Lab** — Test catalog, order lab tests, view results
-6. **Inventory** — Stock levels, transactions, alerts
+4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
+5. **Pharmacy** — Order list, create/manage pharmacy orders
+6. **Lab** — Test catalog, order lab tests, view results
+7. **Inventory** — Stock levels, transactions, alerts
 
 ### Phase 2 — Medium Complexity
-7. **Emergency** — Emergency cases dashboard, ambulance dispatch
-8. **Telemedicine** — Session scheduling, video call integration
-9. **Billing** — Invoice creation, payment history, insurance claims
-10. **AI Agents** — ✅ Built: grid, create/edit, toggle, service assignment
-11. **Notifications** — In-app notification center, configurable triggers
+8. **Emergency** — Emergency cases dashboard, ambulance dispatch
+9. **Telemedicine** — Session scheduling, video call integration
+10. **Billing** — Invoice creation, payment history, insurance claims
+11. **AI Agents** — ✅ Built: grid, create/edit, toggle, service assignment
+12. **Notifications** — In-app notification center, configurable triggers
 
 ### Phase 3 — Advanced
 12. **Knowledge** — Medical knowledge base management
@@ -108,7 +109,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 **Backend**: 50+ API endpoints across 15 router groups. Full coverage: auth, calls, appointments (basic + advanced), clinics, payments, analytics (v1 + v2), EHR, pharmacy, emergency, telemedicine, lab integration, staff scheduling, inventory, webhooks/streaming.
 
-**Frontend**: 11 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Schedule (`/schedule`), Call Logs (`/calls`), Analytics (`/analytics`), Patients (`/patients`), Doctors (`/doctors`), Services (`/services`), AI Agents (`/agents`), Settings (`/settings`). Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
+**Frontend**: 12 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Schedule (`/schedule`), Call Logs (`/calls`), Analytics (`/analytics`), Patients (`/patients`), Patient EHR (`/patients/{id}`), Doctors (`/doctors`), Services (`/services`), AI Agents (`/agents`), Settings (`/settings`). Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
 
 **Testing**: 144 passing backend tests (Python/pytest).
 

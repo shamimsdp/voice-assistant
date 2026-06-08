@@ -546,7 +546,7 @@ Not built. The existing landing page (`/`) is static.
 
 ### 14. EHR / Medical Records
 
-**Status:** 🟡 **API DONE** — 12 endpoints in `/api/ehr/*`
+**Status:** ✅ **DONE**
 
 **Description:** Full electronic health records with structured clinical data.
 
@@ -555,7 +555,10 @@ Not built. The existing landing page (`/`) is static.
 
 **Models:** `MedicalRecord`, `VitalSign`, `Diagnosis`, `Prescription`, `Allergy`, `Immunization`, `FamilyHistory`
 
-**Frontend needed:** See Patient detail pages above (tabs for each record type).
+**Frontend:**
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Patient Detail / EHR | `/patients/{id}` | Patient bio header with stats, 8-tab navigation (Summary, Records, Vitals, Diagnoses, Prescriptions, Allergies, Immunizations, Family History). Expandable record cards. Tables for vitals, prescriptions, immunizations. Add buttons for allergies, immunizations, family history. | ✅ Built |
 
 ---
 
@@ -740,7 +743,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 11 | Inventory | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
 | 12 | Pharmacy | 🟡 API DONE | 4 endpoints | ❌ None | **HIGH** |
 | 13 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
-| 14 | EHR / Medical Records | 🟡 API DONE | 12 endpoints | ❌ None | **HIGH** |
+| 14 | EHR / Medical Records | ✅ DONE | 12 endpoints | `/patients/{id}` with 8-tab EHR detail page | **HIGH** |
 | 15 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
 | 16 | Doctor Management | ✅ DONE | 3 endpoints | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle | **HIGH** |
 | 17 | Emergency / ER | 🟡 API DONE | 6 endpoints | ❌ None | Medium |
@@ -757,26 +760,27 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 ## BUILD ORDER (Recommended)
 
 ### Phase 1 — High-Value Frontend Pages (backends already built)
-1. **Patients** — ✅ Built: list/search, registration modal, detail slideover
+1. **Patients** — ✅ Built: list/search, register modal, detail slideover
 2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
-3. **Inventory** — Stock levels, transactions, alerts
-4. **Pharmacy** — Order creation and management
-5. **Lab** — Test catalog, order lab tests, view results
-6. **Billing** — Invoice creation, payment history, insurance claims
+3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
+4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
+5. **Inventory** — Stock levels, transactions, alerts
+6. **Pharmacy** — Order creation and management
+7. **Lab** — Test catalog, order lab tests, view results
+8. **Billing** — Invoice creation, payment history, insurance claims
 
 ### Phase 2 — Connect Existing Pages to Real APIs
-7. **Dashboard** → `GET /api/analytics/summary`
-8. **Analytics** → `GET /api/analytics/*` and `GET /api/analytics/v2/*`
-9. **Appointments** → `GET/POST/PATCH/DELETE /api/appointments/*`
-10. **Call Logs** → `GET /api/calls`
-11. **Settings** → `GET/PATCH /api/clinics/me`, `GET/POST/DELETE /api/clinics/doctors`
-12. **Login** → `POST /api/auth/request-otp`, `POST /api/auth/verify-otp`
+9. **Dashboard** → `GET /api/analytics/summary`
+10. **Analytics** → `GET /api/analytics/*` and `GET /api/analytics/v2/*`
+11. **Appointments** → `GET/POST/PATCH/DELETE /api/appointments/*`
+12. **Call Logs** → `GET /api/calls`
+13. **Settings** → `GET/PATCH /api/clinics/me`, `GET/POST/DELETE /api/clinics/doctors`
+14. **Login** → `POST /api/auth/request-otp`, `POST /api/auth/verify-otp`
 
 ### Phase 3 — Medium Complexity
-13. **Doctor Management** — ✅ Built: card grid, search, add/edit modal, toggle
-14. **Emergency** — ER dashboard + ambulance dispatch
-15. **Telemedicine** — Session scheduling + video call integration
-16. **AI Agents** — ✅ Built: config page with grid, toggle, service assignment
+15. **Emergency** — ER dashboard + ambulance dispatch
+16. **Telemedicine** — Session scheduling + video call integration
+17. **AI Agents** — ✅ Built: config page with grid, toggle, service assignment
 18. **Notifications** — In-app notification center
 
 ### Phase 4 — Advanced / New Builds
