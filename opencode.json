@@ -15,8 +15,17 @@
       }
     }
   },
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
   "instructions": [
     "AGENTS.md",
-    "frontend/AGENTS.md"
+    "frontend/AGENTS.md",
+    "context/project-overview.md",
+    "context/architecture.md",
+    "context/code-standards.md",
+    "context/ui-context.md",
+    "context/ai-workflow-rules.md",
+    "context/progress-tracker.md"
   ]
 }
