@@ -1023,3 +1023,51 @@ export function useUpdateWebsite() {
   const qc = useQueryClient();
   return useMutation<any, Error, any>({ mutationFn: (data) => api.put("/api/website", data), onSuccess: () => qc.invalidateQueries({ queryKey: ["website"] }) });
 }
+
+// ─── Support Ticket Hooks ────────────────────────────────────────────────────
+
+export interface SupportTicket {
+  id: string;
+  created_by: string;
+  assigned_to: string | null;
+  subject: string;
+  description: string | null;
+  category: string | null;
+  priority: string;
+  status: string;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+  comments?: Array<{
+    id: string;
+    user_id: string;
+    body: string;
+    created_at: string;
+  }>;
+}
+
+export function useSupportTickets(params?: { status?: string; priority?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.priority) qs.set("priority", params.priority);
+  return useQuery<SupportTicket[]>({ queryKey: ["support", "tickets", params], queryFn: () => api.get(`/api/support/tickets?${qs}`) });
+}
+
+export function useSupportTicket(id: string) {
+  return useQuery<SupportTicket>({ queryKey: ["support", "tickets", id], queryFn: () => api.get(`/api/support/tickets/${id}`), enabled: !!id });
+}
+
+export function useCreateTicket() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, any>({ mutationFn: (data) => api.post("/api/support/tickets", data), onSuccess: () => qc.invalidateQueries({ queryKey: ["support", "tickets"] }) });
+}
+
+export function useUpdateTicket() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, { id: string; data: any }>({ mutationFn: ({ id, data }) => api.patch(`/api/support/tickets/${id}`, data), onSuccess: () => qc.invalidateQueries({ queryKey: ["support", "tickets"] }) });
+}
+
+export function useAddTicketComment() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, { id: string; body: string }>({ mutationFn: ({ id, body }) => api.post(`/api/support/tickets/${id}/comments`, { body }), onSuccess: () => qc.invalidateQueries({ queryKey: ["support", "tickets"] }) });
+}

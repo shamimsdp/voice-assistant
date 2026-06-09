@@ -35,6 +35,7 @@ from .lab_integration import (
 )
 from .notification import Notification
 from .website import ClinicWebsite
+from .support import SupportTicket, TicketComment, TicketPriority, TicketStatus
 from .agent import Agent, Service, AgentService
 
 __all__ = [
@@ -62,4 +63,5 @@ __all__ = [
     "Agent", "Service", "AgentService",
     "Notification",
     "ClinicWebsite",
+    "SupportTicket", "TicketComment", "TicketPriority", "TicketStatus",
 ]

@@ -225,42 +225,25 @@
 
 ### 7. Support
 
-**Status:** ❌ **NOT STARTED**
+**Status:** ✅ **DONE**
 
 **Description:** Internal ticketing/help system for clinic staff to report issues or request assistance.
 
 #### Backend
-Not built. No models, services, or endpoints exist.
+| Endpoint | Method | Route | What it does |
+|----------|--------|-------|-------------|
+| Create Ticket | `POST` | `/api/support/tickets` | Create support ticket |
+| List Tickets | `GET` | `/api/support/tickets` | List tickets (filter by status/priority) |
+| Ticket Detail | `GET` | `/api/support/tickets/{id}` | Get ticket with comments |
+| Update Ticket | `PATCH` | `/api/support/tickets/{id}` | Update status/priority/assignment |
+| Add Comment | `POST` | `/api/support/tickets/{id}/comments` | Add comment to ticket |
 
-**Proposed Model:** `SupportTicket`
-| Column | Type |
-|--------|------|
-| id | UUID PK |
-| clinic_id | FK -> clinics |
-| created_by | FK -> users |
-| subject | String(255) |
-| description | Text |
-| priority | Enum(LOW/MEDIUM/HIGH/CRITICAL) |
-| status | Enum(OPEN/IN_PROGRESS/RESOLVED/CLOSED) |
-| assigned_to | FK -> users (nullable) |
-| category | String(100) |
-| created_at | DateTime |
-| resolved_at | DateTime (nullable) |
-
-**Proposed Endpoints:**
-| Method | Route | What it does |
-|--------|-------|-------------|
-| `POST` | `/api/support/tickets` | Create ticket |
-| `GET` | `/api/support/tickets` | List tickets (filter by status/priority) |
-| `GET` | `/api/support/tickets/{id}` | Get ticket detail |
-| `PATCH` | `/api/support/tickets/{id}` | Update ticket (status, assignment) |
-| `POST` | `/api/support/tickets/{id}/comments` | Add comment |
+**Models:** `SupportTicket` (id, clinic_id, created_by, assigned_to, subject, description, category, priority: low/medium/high/critical, status: open/in_progress/resolved/closed, resolved_at), `TicketComment` (id, ticket_id, user_id, body, created_at)
 
 #### Frontend
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Support Tickets | `/support` | List view with status badges, priority indicators. Create ticket button. | Low |
-| Ticket Detail | `/support/{id}` | Thread view with comments, status update controls | Low |
+| Page | Route | Key UI |
+|------|-------|--------|
+| Support Tickets | `/support` | Split-panel: ticket list with status/priority/badge, detail panel with comments thread, status actions (Start Progress → Resolve → Close), Create Ticket modal with subject/description/category/priority. Status + priority filters.
 
 ---
 
@@ -749,6 +732,6 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 
 ### Phase 4 — Advanced / New Builds
 19. **Knowledge Base** — Searchable medical FAQ/protocols
-20. **Support** — Internal ticketing system
+20. **Support** — ✅ Built: ticketing system with status workflow, comments, create modal
 21. **Patient Portal** — Patient self-service
 22. **Website Builder** — ✅ Built: form-based editor + public clinic page

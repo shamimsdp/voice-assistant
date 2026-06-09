@@ -18,7 +18,7 @@
 | **Appointments** | ✅ DONE | `GET/POST /api/appointments/*`, `GET/POST /api/advanced-appointments/*` | `/appointments` | CRUD, filters, booking modal with zod validation |
 | **Schedule** | ✅ DONE | `staff_scheduling_service.py` — weekly schedules, availability, time-off, shift overrides (`/api/staff-scheduling/*`) | `/schedule` | Month calendar grid, day detail panel, time-off tab, book/create/time-off modals |
 | **Patients** | ✅ DONE | `Patient` model with `clinic_id` + `email`, `GET/POST/PUT/DELETE /api/patients` | `/patients` | Patient list with search, registration modal, detail slideover |
-| **Support** | ❌ NOT STARTED | — | ❌ Not started | Ticketing/help system for clinic staff |
+| **Support** | ✅ DONE | `POST/GET /api/support/tickets`, `PATCH /api/support/tickets/{id}`, `POST /api/support/tickets/{id}/comments` | `/support` split-panel: ticket list, detail with comments, create modal, status actions | Ticketing/help system for clinic staff |
 
 ---
 
@@ -114,9 +114,9 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 12. **Notifications** — In-app notification center, configurable triggers
 
 ### Phase 3 — Advanced
-12. **Knowledge** — Medical knowledge base management
+12. **Knowledge** — Searchable medical FAQ/protocols management
 13. **Website** — ✅ Built: form-based builder + public page at `/clinic/{id}`
-14. **Support** — Internal ticketing system
+14. **Support** — ✅ Built: ticketing system with comments, status workflow, create modal
 15. **Patient Portal** — Patient self-service login
 
 ---

@@ -83,8 +83,7 @@ Update this file after every meaningful implementation change.
 
 ### Remaining
 19. Knowledge Base — Searchable medical FAQ/protocols
-20. Support — Internal ticketing system
-21. Patient Portal — Patient self-service login
+20. Patient Portal — Patient self-service login
 
 ## Open Questions
 

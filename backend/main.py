@@ -14,6 +14,7 @@ from db.base import init_db
 from routers import calls, appointments, clinics, payments, auth, webhooks, analytics
 from routers.notifications import router as notifications_router
 from routers.website import router as website_router
+from routers.support import router as support_router
 from routers.advanced_appointments import router as advanced_appointments_router
 from routers.analytics_v2 import router as analytics_v2_router
 from routers.inventory import router as inventory_router
@@ -98,6 +99,7 @@ app.include_router(services_router, prefix="/api/services", tags=["Services"])
 app.include_router(patients_router, prefix="/api/patients", tags=["Patients"])
 app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
 app.include_router(website_router, prefix="/api", tags=["Website"])
+app.include_router(support_router, prefix="/api", tags=["Support"])
 
 
 @app.get("/", tags=["Health"])
