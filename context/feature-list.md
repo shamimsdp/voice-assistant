@@ -430,30 +430,26 @@ Not built. No models, services, or endpoints exist.
 
 ### 11. Website
 
-**Status:** ❌ **NOT STARTED**
+**Status:** ✅ **DONE**
 
-**Description:** Clinic website/public page configuration — hours, doctor profiles, contact info, service listings.
+**Description:** Clinic website/public page configuration — hours, doctor profiles, contact info, service listings. Form-based builder for clinic staff + live public page at `/clinic/{id}`.
 
 #### Backend
-Not built. The existing landing page (`/`) is static.
+| Endpoint | Method | Route | What it does |
+|----------|--------|-------|-------------|
+| Get Config | `GET` | `/api/website` | Get clinic website config (auth required) |
+| Update Config | `PUT` | `/api/website` | Create/update website config (auth required) |
+| Public Page | `GET` | `/api/website/public/{clinic_id}` | Public website data (no auth) with doctors, services |
 
-**Proposed Model:** `ClinicWebsite`
-| Column | Type |
-|--------|------|
-| id | UUID PK |
-| clinic_id | FK -> clinics (unique) |
-| custom_domain | String(255) (nullable) |
-| theme_color | String(7) (default: "#10b981") |
-| hero_title | String(255) (nullable) |
-| hero_subtitle | Text (nullable) |
-| about_text | Text (nullable) |
-| is_published | Boolean (default: false) |
+**Model:** `ClinicWebsite`: id, clinic_id (unique), custom_domain, theme_color, hero_title (EN+BN), hero_subtitle (EN+BN), about_text (EN+BN), contact_phone, contact_email, address (EN+BN), working_hours (JSON), section headings (EN+BN), visibility toggles, footer_text (EN+BN), is_published
 
 #### Frontend
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Website Builder | `/website` | Drag-and-drop or form-based site editor | Low |
-| Public Clinic Page | `/clinic/{slug}` | Public-facing landing with hours, doctors, contact, book button | Low |
+| Page | Route | Key UI |
+|------|-------|--------|
+| Website Builder | `/website` | Form-based editor with sections: Hero, About, Contact, Working Hours (day-by-day toggle + time pickers), Section Headings, Visibility toggles (show doctors/services/appointment button), Publish toggle. Save + Preview buttons. |
+| Public Clinic Page | `/clinic/{id}` | Live public-facing landing page with hero, about, contact cards (phone/email/address), working hours, services grid, doctors grid, footer. Clean white theme with accent color from config. Book Appointment CTA. |
+
+**Note:** The public page uses a clean white theme with the clinic's configured accent color (not the dark dashboard theme).
 
 ---
 
@@ -755,4 +751,4 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 19. **Knowledge Base** — Searchable medical FAQ/protocols
 20. **Support** — Internal ticketing system
 21. **Patient Portal** — Patient self-service
-22. **Website Builder** — Clinic public page config
+22. **Website Builder** — ✅ Built: form-based editor + public clinic page

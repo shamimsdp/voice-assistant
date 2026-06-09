@@ -29,7 +29,7 @@
 | **AI Agents** | ✅ DONE | `GET/POST /api/agents/*`, `PUT/DELETE /api/agents/{id}`, `PATCH /api/agents/{id}/toggle`, `POST /api/agents/{id}/services` | `/agents` | 8 pre-defined agents + custom creation, activation toggle, service assignment, voice/tone/greeting/prompt config |
 | **Services** | ✅ DONE | `GET/POST /api/services/*`, `PUT/DELETE /api/services/{id}` | `/services` | Service catalog with categories (14 types), duration, pricing CRUD, search + category filter |
 | **Knowledge** | ❌ NOT STARTED | — | ❌ Not started | FAQ/Q&A knowledge base for AI agents — predefined + custom Q&A by category |
-| **Website** | ❌ NOT STARTED | — | ❌ Not started | Clinic website builder or landing page config (hours, doctors, contact info) |
+| **Website** | ✅ DONE | `GET/PUT /api/website`, `GET /api/website/public/{clinic_id}` | `/website` form-based builder with sections (Hero, About, Contact, Hours, Visibility), `/clinic/{id}` public landing page with white theme | Clinic website builder or landing page config (hours, doctors, contact info) |
 
 ---
 
@@ -115,7 +115,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 ### Phase 3 — Advanced
 12. **Knowledge** — Medical knowledge base management
-13. **Website** — Clinic public website config
+13. **Website** — ✅ Built: form-based builder + public page at `/clinic/{id}`
 14. **Support** — Internal ticketing system
 15. **Patient Portal** — Patient self-service login
 

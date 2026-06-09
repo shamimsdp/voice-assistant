@@ -34,6 +34,7 @@ from .lab_integration import (
     LabTestCategory, SpecimenType, OrderStatus,
 )
 from .notification import Notification
+from .website import ClinicWebsite
 from .agent import Agent, Service, AgentService
 
 __all__ = [
@@ -60,4 +61,5 @@ __all__ = [
     "LabTestCategory", "SpecimenType", "OrderStatus",
     "Agent", "Service", "AgentService",
     "Notification",
+    "ClinicWebsite",
 ]

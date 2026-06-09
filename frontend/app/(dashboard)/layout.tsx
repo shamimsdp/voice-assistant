@@ -23,6 +23,7 @@ import {
   Pill,
   Receipt,
   Video,
+  Globe,
   HeartPulse,
   Users,
   Bell,
@@ -79,6 +80,7 @@ export default function DashboardLayout({
     { name: "Services", href: "/services", icon: Briefcase },
     { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Notifications", href: "/notifications", icon: Bell },
+    { name: "Website", href: "/website", icon: Globe },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
   ];
 

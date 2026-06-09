@@ -60,6 +60,8 @@ Update this file after every meaningful implementation change.
 - Services (`/services`) — Service catalog with CRUD modal, category filter
 - AI Agents (`/agents`) — Agent grid, create/edit modal, activation toggle, service assignment
 - Notifications (`/notifications`) — Full list with type/unread filters, mark read/all read. Bell dropdown in header.
+- **Notifications** — ✅ Built: bell dropdown with unread count badge, auto-refresh 30s, full Notification Center page with type/unread filters, mark read/all read
+- **Website** — ✅ Built: 5-section form-based builder (Hero, About, Contact, Hours, Visibility), public clinic page at `/clinic/{id}` with white theme
 - Settings (`/settings`) — Clinic config, localization guards, SMS gateway, AI persona, doctor toggles
 
 ### Libraries Integrated
@@ -83,10 +85,6 @@ Update this file after every meaningful implementation change.
 19. Knowledge Base — Searchable medical FAQ/protocols
 20. Support — Internal ticketing system
 21. Patient Portal — Patient self-service login
-22. Website — Clinic public page config
-20. Support — Internal ticketing system
-21. Patient Portal — Patient self-service login
-22. Website — Clinic public page config
 
 ## Open Questions
 
@@ -110,5 +108,5 @@ Update this file after every meaningful implementation change.
 - 2026-06-08: Built all backend features (#4 Clinic Operations: inventory, staff scheduling, lab) and (#5 Integration & Expansion: EHR, telemedicine, pharmacy, emergency)
 - 2026-06-08: Installed frontend libraries (zustand, TanStack Query, recharts, react-hook-form + zod, framer-motion)
 - 2026-06-08: Integrated recharts into analytics page, Zod validation into appointments form, framer-motion into all pages
-- 2026-06-08: Created feature-list.md and updated feature-progress.md with comprehensive specs
+- 2026-06-09: Built Notifications Center (model, service, router, bell dropdown, full page). Built Website Builder (5-section form editor + public clinic page with white theme). Both with zero TS errors and 159 tests passing.
 - 2026-06-08: Created feature-builder subagent, project context folder with 6 files, and skills

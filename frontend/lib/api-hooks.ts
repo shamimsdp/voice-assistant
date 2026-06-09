@@ -982,3 +982,44 @@ export function useDispatchAmbulance() {
   const qc = useQueryClient();
   return useMutation<any, Error, any>({ mutationFn: (data) => api.post("/api/emergency/ambulance", data), onSuccess: () => qc.invalidateQueries({ queryKey: ["emergency"] }) });
 }
+
+// ─── Website Hooks ──────────────────────────────────────────────────────────
+
+export interface ClinicWebsite {
+  id: string;
+  clinic_id: string;
+  custom_domain: string | null;
+  theme_color: string;
+  hero_title: string | null;
+  hero_title_bn: string | null;
+  hero_subtitle: string | null;
+  hero_subtitle_bn: string | null;
+  about_text: string | null;
+  about_text_bn: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  address: string | null;
+  address_bn: string | null;
+  working_hours: Record<string, unknown> | null;
+  services_heading: string | null;
+  services_heading_bn: string | null;
+  doctors_heading: string | null;
+  doctors_heading_bn: string | null;
+  show_doctors: boolean;
+  show_services: boolean;
+  show_appointment_button: boolean;
+  footer_text: string | null;
+  footer_text_bn: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useClinicWebsite() {
+  return useQuery<ClinicWebsite | null>({ queryKey: ["website"], queryFn: () => api.get("/api/website") });
+}
+
+export function useUpdateWebsite() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, any>({ mutationFn: (data) => api.put("/api/website", data), onSuccess: () => qc.invalidateQueries({ queryKey: ["website"] }) });
+}
