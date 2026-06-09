@@ -18,6 +18,7 @@ import {
   UserCheck,
   Bot,
   Briefcase,
+  Package,
   Users,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ export default function DashboardLayout({
     { name: "Analytics", href: "/analytics", icon: BarChart3 },
     { name: "Patients", href: "/patients", icon: Users },
     { name: "Doctors", href: "/doctors", icon: Stethoscope },
+    { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Services", href: "/services", icon: Briefcase },
     { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Settings", href: "/settings", icon: SettingsIcon },

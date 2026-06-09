@@ -740,7 +740,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 8 | AI Agents | ✅ Done | `/api/agents/*` + 8 pre-defined agents | `/agents` with grid, create, edit, toggle, service assignment | Medium |
 | 9 | Services | ✅ Done | `/api/services/*` with 14 categories | `/services` with catalog, CRUD modal, search, category filter | Medium |
 | 10 | Notifications | 🟠 Partial | SMS service + 1 endpoint | SMS button only | Medium |
-| 11 | Inventory | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
+| 11 | Inventory | ✅ DONE | 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs | **HIGH** |
 | 12 | Pharmacy | 🟡 API DONE | 4 endpoints | ❌ None | **HIGH** |
 | 13 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
 | 14 | EHR / Medical Records | ✅ DONE | 12 endpoints | `/patients/{id}` with 8-tab EHR detail page | **HIGH** |
@@ -764,7 +764,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
 3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
 4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
-5. **Inventory** — Stock levels, transactions, alerts
+5. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
 6. **Pharmacy** — Order creation and management
 7. **Lab** — Test catalog, order lab tests, view results
 8. **Billing** — Invoice creation, payment history, insurance claims

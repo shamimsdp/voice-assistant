@@ -53,7 +53,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 | **Lab Integration** | `/api/lab/*` | 9 endpoints — test catalog, orders, results, imaging | Lab ordering + results viewing page |
 | **Emergency & Triage** | `/api/emergency/*` | 6 endpoints — cases, ambulance dispatch | Emergency dashboard + case detail page |
 | **Telemedicine** | `/api/telemedicine/*` | 3 endpoints — sessions, listing, status | Telemedicine scheduling + video call join page |
-| **Inventory** | `/api/inventory/*` | 9 endpoints — items, stock, transactions, supplies, equipment | Inventory management page with stock alerts |
+| **Inventory** | ✅ DONE | `/api/inventory/*` — 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs |
 | **Staff Scheduling** | `/api/staff-scheduling/*` | 7 endpoints — weekly schedules, availability, time-off, overrides | Doctor schedule view + time-off request page |
 | **Invoice / Billing** | `/api/payments/*` | 11 endpoints — invoices, insurance claims, financial reports, payment history | Billing page with invoice creation + payment history |
 | **Advanced Appointments** | `/api/advanced-appointments/*` | 18 endpoints — symptom matching, conflict detection, waiting list, recurring, group bookings, questionnaires | Waiting list management, recurring templates, group booking, pre-visit questionnaires |
@@ -88,7 +88,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
 5. **Pharmacy** — Order list, create/manage pharmacy orders
 6. **Lab** — Test catalog, order lab tests, view results
-7. **Inventory** — Stock levels, transactions, alerts
+7. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
 
 ### Phase 2 — Medium Complexity
 8. **Emergency** — Emergency cases dashboard, ambulance dispatch
