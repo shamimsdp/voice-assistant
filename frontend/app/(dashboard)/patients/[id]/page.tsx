@@ -2,6 +2,20 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useQueries } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import {
+  usePatient,
+  usePatientSummary,
+  useMedicalRecords,
+  useRecordDetail,
+  usePatientAllergies,
+  useAddAllergy,
+  usePatientImmunizations,
+  useAddImmunization,
+  useAddFamilyHistory,
+} from "@/lib/api-hooks";
+import type { RecordDetail as RecordDetailType, Allergy, Immunization } from "@/lib/api-hooks";
 import {
   ArrowLeft,
   User,
@@ -22,181 +36,8 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-
-interface Patient {
-  id: string;
-  phone: string;
-  name: string;
-  nameBn: string;
-  email: string;
-  dateOfBirth: string;
-  gender: string;
-  address: string;
-  preferredLanguage: string;
-  isActive: boolean;
-}
-
-interface MedRecord {
-  id: string;
-  visitDate: string;
-  visitType: string;
-  doctor: string;
-  chiefComplaint: string;
-  assessment: string;
-  plan: string;
-  vitals: Vital[];
-  diagnoses: Diagnosis[];
-  prescriptions: Prescription[];
-}
-
-interface Vital {
-  id: string;
-  parameter: string;
-  value: number;
-  unit: string;
-}
-
-interface Diagnosis {
-  id: string;
-  name: string;
-  icdCode: string;
-  type: string;
-}
-
-interface Prescription {
-  id: string;
-  medicine: string;
-  dosage: string;
-  frequency: string;
-  durationDays: number;
-  route: string;
-  instructions: string;
-}
-
-interface Allergy {
-  id: string;
-  allergen: string;
-  severity: "mild" | "moderate" | "severe" | "life_threatening";
-  reaction: string;
-}
-
-interface Immunization {
-  id: string;
-  vaccine: string;
-  dose: number;
-  date: string;
-  nextDue: string;
-  administeredBy: string;
-}
-
-interface FamilyEntry {
-  id: string;
-  relationship: string;
-  condition: string;
-  notes: string;
-}
-
-// ── Mock Patient ─────────────────────────────────────────────────────────────
-const PATIENT: Patient = {
-  id: "p1",
-  phone: "01711223344",
-  name: "Imran Khan",
-  nameBn: "ইমরান খান",
-  email: "imran.khan@email.com",
-  dateOfBirth: "1985-06-15",
-  gender: "Male",
-  address: "42 Gulshan Avenue, Dhaka 1212",
-  preferredLanguage: "bn-BD",
-  isActive: true,
-};
-
-const MOCK_RECORDS: MedRecord[] = [
-  {
-    id: "r1",
-    visitDate: "2026-06-04",
-    visitType: "follow_up",
-    doctor: "Dr. Shah Alam",
-    chiefComplaint: "Chest discomfort, mild shortness of breath",
-    assessment: "Stable angina. Patient responding well to medication. Continue current regimen.",
-    plan: "Follow up in 3 months. ECG at next visit. Continue exercise regimen.",
-    vitals: [
-      { id: "v1", parameter: "Blood Pressure", value: 128, unit: "mmHg" },
-      { id: "v2", parameter: "Heart Rate", value: 82, unit: "bpm" },
-      { id: "v3", parameter: "Temperature", value: 36.8, unit: "celsius" },
-      { id: "v4", parameter: "Weight", value: 78, unit: "kg" },
-      { id: "v5", parameter: "Height", value: 172, unit: "cm" },
-    ],
-    diagnoses: [
-      { id: "d1", name: "Stable Angina Pectoris", icdCode: "I20.8", type: "primary" },
-      { id: "d2", name: "Hypertension", icdCode: "I10", type: "secondary" },
-    ],
-    prescriptions: [
-      { id: "p1", medicine: "Aspirin 75mg", dosage: "75mg", frequency: "Once daily", durationDays: 90, route: "oral", instructions: "Take after breakfast" },
-      { id: "p2", medicine: "Atorvastatin 20mg", dosage: "20mg", frequency: "Once daily", durationDays: 90, route: "oral", instructions: "Take at bedtime" },
-    ],
-  },
-  {
-    id: "r2",
-    visitDate: "2026-03-15",
-    visitType: "new",
-    doctor: "Dr. Shah Alam",
-    chiefComplaint: "Chest pain on exertion, fatigue, occasional dizziness",
-    assessment: "Initial diagnosis of angina with underlying hypertension. Started on medication. Patient advised lifestyle modifications.",
-    plan: "Cardiac workup completed. Stress test scheduled. Dietary consult recommended.",
-    vitals: [
-      { id: "v6", parameter: "Blood Pressure", value: 145, unit: "mmHg" },
-      { id: "v7", parameter: "Heart Rate", value: 88, unit: "bpm" },
-      { id: "v8", parameter: "Temperature", value: 36.6, unit: "celsius" },
-      { id: "v9", parameter: "Weight", value: 82, unit: "kg" },
-      { id: "v10", parameter: "Height", value: 172, unit: "cm" },
-    ],
-    diagnoses: [
-      { id: "d3", name: "Unstable Angina", icdCode: "I20.0", type: "primary" },
-      { id: "d4", name: "Essential Hypertension", icdCode: "I10", type: "primary" },
-    ],
-    prescriptions: [
-      { id: "p3", medicine: "Aspirin 75mg", dosage: "75mg", frequency: "Once daily", durationDays: 30, route: "oral", instructions: "Take after breakfast" },
-      { id: "p4", medicine: "Atorvastatin 20mg", dosage: "20mg", frequency: "Once daily", durationDays: 30, route: "oral", instructions: "Take at bedtime" },
-      { id: "p5", medicine: "Metoprolol 50mg", dosage: "50mg", frequency: "Twice daily", durationDays: 30, route: "oral", instructions: "Take with meals" },
-    ],
-  },
-  {
-    id: "r3",
-    visitDate: "2025-11-20",
-    visitType: "routine_checkup",
-    doctor: "Dr. Farzana Huq",
-    chiefComplaint: "Annual health checkup",
-    assessment: "Generally healthy. Mildly elevated BP noted. Lab results within normal range except borderline cholesterol.",
-    plan: "Repeat lipid panel in 6 months. Lifestyle counseling provided.",
-    vitals: [
-      { id: "v11", parameter: "Blood Pressure", value: 135, unit: "mmHg" },
-      { id: "v12", parameter: "Heart Rate", value: 76, unit: "bpm" },
-      { id: "v13", parameter: "Temperature", value: 36.5, unit: "celsius" },
-      { id: "v14", parameter: "Weight", value: 80, unit: "kg" },
-    ],
-    diagnoses: [],
-    prescriptions: [],
-  },
-];
-
-const MOCK_ALLERGIES: Allergy[] = [
-  { id: "a1", allergen: "Penicillin", severity: "moderate", reaction: "Skin rash, itching" },
-  { id: "a2", allergen: "Sulfa Drugs", severity: "mild", reaction: "Nausea" },
-];
-
-const MOCK_IMMUNIZATIONS: Immunization[] = [
-  { id: "i1", vaccine: "COVID-19 Moderna", dose: 1, date: "2025-03-01", nextDue: "", administeredBy: "Dr. Farzana Huq" },
-  { id: "i2", vaccine: "COVID-19 Moderna", dose: 2, date: "2025-04-01", nextDue: "", administeredBy: "Dr. Farzana Huq" },
-  { id: "i3", vaccine: "Influenza (Seasonal)", dose: 1, date: "2025-10-15", nextDue: "2026-10-15", administeredBy: "Dr. Shah Alam" },
-  { id: "i4", vaccine: "Tetanus Booster", dose: 1, date: "2024-06-10", nextDue: "2034-06-10", administeredBy: "Dr. M. Rahman" },
-];
-
-const MOCK_FAMILY: FamilyEntry[] = [
-  { id: "f1", relationship: "Father", condition: "Hypertension", notes: "Diagnosed at age 55" },
-  { id: "f2", relationship: "Mother", condition: "Type 2 Diabetes", notes: "Diagnosed at age 60" },
-  { id: "f3", relationship: "Brother", condition: "Coronary Artery Disease", notes: "Bypass surgery at age 50" },
-];
 
 type Tab = "summary" | "records" | "vitals" | "diagnoses" | "prescriptions" | "allergies" | "immunizations" | "family";
 
@@ -242,10 +83,134 @@ export default function PatientDetailPage() {
   const [showImmunizationForm, setShowImmunizationForm] = useState(false);
   const [showFamilyForm, setShowFamilyForm] = useState(false);
 
-  const p = PATIENT;
-  const allVitals = MOCK_RECORDS.flatMap(r => r.vitals.map(v => ({ ...v, visitDate: r.visitDate, doctor: r.doctor })));
-  const allDiagnoses = MOCK_RECORDS.flatMap(r => r.diagnoses.map(d => ({ ...d, visitDate: r.visitDate, doctor: r.doctor })));
-  const allPrescriptions = MOCK_RECORDS.flatMap(r => r.prescriptions.map(p => ({ ...p, visitDate: r.visitDate, doctor: r.doctor })));
+  const [allergyForm, setAllergyForm] = useState({ allergen: "", severity: "mild", reaction: "" });
+  const [immunizationForm, setImmunizationForm] = useState({ vaccine: "", dose: 1, date: "", next_due: "" });
+  const [familyForm, setFamilyForm] = useState({ relationship: "", condition: "" });
+
+  const { data: patient, isLoading: patientLoading, error: patientError } = usePatient(patientId);
+  const { data: summary, isLoading: summaryLoading } = usePatientSummary(patientId);
+  const { data: medicalRecords, isLoading: recordsLoading } = useMedicalRecords(patientId);
+  const { data: allergies, isLoading: allergiesLoading } = usePatientAllergies(patientId);
+  const { data: immunizations, isLoading: immunizationsLoading } = usePatientImmunizations(patientId);
+  const { data: expandedRecordDetail, isLoading: detailLoading } = useRecordDetail(expandedRecord);
+
+  const recordsList = medicalRecords || [];
+
+  const recordDetailQueries = useQueries({
+    queries: recordsList.map((record) => ({
+      queryKey: ["ehr", "record-detail", record.id],
+      queryFn: () => api.get(`/api/ehr/records/${record.id}`),
+      staleTime: 30000,
+    })),
+  });
+
+  const allRecordDetails = recordDetailQueries.map((q) => q.data as RecordDetailType | undefined).filter(Boolean);
+  const areDetailsLoading = recordDetailQueries.some((q) => q.isLoading) && recordsList.length > 0;
+
+  const allVitals = allRecordDetails.flatMap((d) =>
+    (d?.vitals || []).map((v) => ({
+      parameter_name: v.parameter_name,
+      value: v.value,
+      unit: v.unit,
+      visitDate: d!.visit_date,
+      doctorId: d!.doctor_id,
+    }))
+  );
+
+  const allDiagnoses = allRecordDetails.flatMap((d) =>
+    (d?.diagnoses || []).map((diag) => ({
+      name: diag.name,
+      icd_code: diag.icd_code,
+      type: diag.type,
+      visitDate: d!.visit_date,
+      doctorId: d!.doctor_id,
+    }))
+  );
+
+  const allPrescriptions = allRecordDetails.flatMap((d) =>
+    (d?.prescriptions || []).map((p) => ({
+      medicine_name: p.medicine_name,
+      dosage: p.dosage,
+      frequency: p.frequency,
+      duration_days: p.duration_days,
+      route: p.route,
+      instructions: p.instructions,
+      visitDate: d!.visit_date,
+      doctorId: d!.doctor_id,
+    }))
+  );
+
+  const addAllergyMutation = useAddAllergy();
+  const addImmunizationMutation = useAddImmunization();
+  const addFamilyHistoryMutation = useAddFamilyHistory();
+
+  const handleAddAllergy = () => {
+    if (!allergyForm.allergen.trim()) return;
+    addAllergyMutation.mutate(
+      { patientId, data: { allergen: allergyForm.allergen, severity: allergyForm.severity, reaction: allergyForm.reaction } },
+      { onSuccess: () => { setShowAllergyForm(false); setAllergyForm({ allergen: "", severity: "mild", reaction: "" }); } }
+    );
+  };
+
+  const handleAddImmunization = () => {
+    if (!immunizationForm.vaccine.trim() || !immunizationForm.date) return;
+    addImmunizationMutation.mutate(
+      { patientId, data: { vaccine: immunizationForm.vaccine, dose: immunizationForm.dose, date: immunizationForm.date, next_due: immunizationForm.next_due || null } },
+      { onSuccess: () => { setShowImmunizationForm(false); setImmunizationForm({ vaccine: "", dose: 1, date: "", next_due: "" }); } }
+    );
+  };
+
+  const handleAddFamilyHistory = () => {
+    if (!familyForm.relationship.trim() || !familyForm.condition.trim()) return;
+    addFamilyHistoryMutation.mutate(
+      { patientId, data: { relationship: familyForm.relationship, condition: familyForm.condition } },
+      { onSuccess: () => { setShowFamilyForm(false); setFamilyForm({ relationship: "", condition: "" }); } }
+    );
+  };
+
+  if (patientLoading) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <div className="h-8 w-32 bg-slate-800/50 rounded-lg animate-pulse mb-4" />
+        <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-6 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-slate-800 animate-pulse" />
+            <div className="space-y-2 flex-1">
+              <div className="h-6 w-64 bg-slate-800/50 rounded-lg animate-pulse" />
+              <div className="h-4 w-80 bg-slate-800/30 rounded-lg animate-pulse" />
+            </div>
+          </div>
+        </div>
+        <div className="h-10 bg-[#0a1120] border border-slate-800/60 rounded-2xl animate-pulse mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
+              <div className="h-4 w-24 bg-slate-800/50 rounded-lg animate-pulse mb-3" />
+              <div className="space-y-2">
+                <div className="h-10 bg-slate-800/20 rounded-lg animate-pulse" />
+                <div className="h-10 bg-slate-800/20 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (patientError || !patient) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-4 transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Patients
+        </button>
+        <div className="bg-[#0a1120] border border-red-500/20 rounded-2xl p-12 text-center">
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <p className="text-base font-bold text-white mb-1">Patient Not Found</p>
+          <p className="text-sm text-slate-500">Could not load patient details. They may have been removed or you may not have access.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -263,30 +228,30 @@ export default function PatientDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-xl font-bold text-white">{p.name}</h1>
-                <span className="text-xs text-slate-500">({p.nameBn})</span>
+                <h1 className="text-xl font-bold text-white">{patient.name || "Unknown"}</h1>
+                {patient.name_bn && <span className="text-xs text-slate-500">({patient.name_bn})</span>}
               </div>
               <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-400">
-                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{p.phone}</span>
-                <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{p.email}</span>
-                <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDate(p.dateOfBirth)}</span>
-                <span>{p.gender}</span>
-                <span><span className="text-slate-600">Language:</span> {p.preferredLanguage === "bn-BD" ? "Bangla" : "English"}</span>
+                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{patient.phone}</span>
+                {patient.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{patient.email}</span>}
+                {patient.date_of_birth && <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDate(patient.date_of_birth)}</span>}
+                {patient.gender && <span>{patient.gender}</span>}
+                <span><span className="text-slate-600">Language:</span> {patient.preferred_language === "bn-BD" ? "Bangla" : "English"}</span>
               </div>
-              {p.address && <p className="text-xs text-slate-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{p.address}</p>}
+              {patient.address && <p className="text-xs text-slate-500 mt-1 flex items-center gap-1"><MapPin className="w-3 h-3" />{patient.address}</p>}
             </div>
           </div>
           <div className="flex items-center gap-6 text-sm">
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">{MOCK_RECORDS.length}</p>
+              <p className="text-2xl font-bold text-white">{summary?.total_visits ?? recordsList.length}</p>
               <p className="text-[10px] text-slate-500">Total Visits</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">{allDiagnoses.length}</p>
+              <p className="text-2xl font-bold text-white">{allDiagnoses.length || (summary?.chronic_diagnoses?.length ?? 0)}</p>
               <p className="text-[10px] text-slate-500">Diagnoses</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">{MOCK_ALLERGIES.length}</p>
+              <p className="text-2xl font-bold text-white">{allergies?.length ?? summary?.active_allergies?.length ?? 0}</p>
               <p className="text-[10px] text-slate-500">Allergies</p>
             </div>
           </div>
@@ -317,27 +282,35 @@ export default function PatientDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
             <h3 className="text-sm font-bold text-white mb-3">Visit Summary</h3>
-            <div className="space-y-2">
-              {["new", "follow_up", "emergency", "routine_checkup", "telemedicine", "home_visit"].map(t => {
-                const count = MOCK_RECORDS.filter(r => r.visitType === t).length;
-                if (count === 0) return null;
-                return (
-                  <div key={t} className="flex items-center justify-between bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
-                    <span className="text-xs text-slate-400">{getVisitTypeLabel(t)}</span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${getVisitTypeColor(t)}`}>{count}</span>
-                  </div>
-                );
-              })}
-            </div>
+            {summaryLoading ? (
+              <div className="space-y-2">
+                {[1, 2].map((i) => <div key={i} className="h-10 bg-slate-800/20 rounded-lg animate-pulse" />)}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {(Object.entries(summary?.visit_types || {})).length === 0 ? (
+                  <p className="text-xs text-slate-500">No visits recorded</p>
+                ) : (
+                  Object.entries(summary?.visit_types || {}).map(([t, count]) => (
+                    <div key={t} className="flex items-center justify-between bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
+                      <span className="text-xs text-slate-400">{getVisitTypeLabel(t)}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${getVisitTypeColor(t)}`}>{count}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
             <h3 className="text-sm font-bold text-white mb-3">Chronic Diagnoses</h3>
-            {allDiagnoses.length === 0 ? (
+            {summaryLoading ? (
+              <div className="h-10 bg-slate-800/20 rounded-lg animate-pulse" />
+            ) : (summary?.chronic_diagnoses?.length ?? 0) === 0 ? (
               <p className="text-xs text-slate-500">No chronic diagnoses recorded</p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {Array.from(new Set(allDiagnoses.map(d => d.name))).map(n => (
+                {(summary?.chronic_diagnoses || []).map((n) => (
                   <span key={n} className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/25 px-2 py-1 rounded-lg">{n}</span>
                 ))}
               </div>
@@ -349,17 +322,21 @@ export default function PatientDetailPage() {
               Active Allergies
               <button onClick={() => setShowAllergyForm(true)} className="text-emerald-400 hover:text-emerald-300"><Plus className="w-4 h-4" /></button>
             </h3>
-            {MOCK_ALLERGIES.length === 0 ? (
+            {summaryLoading ? (
+              <div className="space-y-2">
+                {[1].map((i) => <div key={i} className="h-10 bg-slate-800/20 rounded-lg animate-pulse" />)}
+              </div>
+            ) : ((summary?.active_allergies?.length ?? 0) === 0) ? (
               <p className="text-xs text-slate-500">No allergies recorded</p>
             ) : (
               <div className="space-y-2">
-                {MOCK_ALLERGIES.map(a => (
-                  <div key={a.id} className="flex items-center justify-between bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
+                {(summary?.active_allergies || []).map((a, i) => (
+                  <div key={`allergy-${i}`} className="flex items-center justify-between bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
                     <div>
                       <p className="text-xs font-semibold text-white">{a.allergen}</p>
-                      <p className="text-[10px] text-slate-500">{a.reaction}</p>
+                      {a.reaction && <p className="text-[10px] text-slate-500">{a.reaction}</p>}
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${SEVERITY_COLORS[a.severity]}`}>{a.severity}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${SEVERITY_COLORS[a.severity] || SEVERITY_COLORS.mild}`}>{a.severity}</span>
                   </div>
                 ))}
               </div>
@@ -371,20 +348,24 @@ export default function PatientDetailPage() {
               Immunizations
               <button onClick={() => setShowImmunizationForm(true)} className="text-emerald-400 hover:text-emerald-300"><Plus className="w-4 h-4" /></button>
             </h3>
-            {MOCK_IMMUNIZATIONS.length === 0 ? (
+            {summaryLoading ? (
+              <div className="space-y-2">
+                {[1].map((i) => <div key={i} className="h-14 bg-slate-800/20 rounded-lg animate-pulse" />)}
+              </div>
+            ) : ((summary?.immunizations?.length ?? 0) === 0) ? (
               <p className="text-xs text-slate-500">No immunizations recorded</p>
             ) : (
               <div className="space-y-2">
-                {MOCK_IMMUNIZATIONS.slice(0, 3).map(i => (
-                  <div key={i.id} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
+                {(summary?.immunizations || []).slice(0, 3).map((i, idx) => (
+                  <div key={`imm-${idx}`} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-white">{i.vaccine}</span>
-                      <span className="text-[10px] text-slate-500">Dose {i.dose}</span>
+                      {i.dose != null && <span className="text-[10px] text-slate-500">Dose {i.dose}</span>}
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(i.date)}{i.nextDue ? ` · Next: ${formatDate(i.nextDue)}` : ""}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{formatDate(i.date)}{i.next_due ? ` · Next: ${formatDate(i.next_due)}` : ""}</p>
                   </div>
                 ))}
-                {MOCK_IMMUNIZATIONS.length > 3 && <p className="text-[10px] text-slate-500 text-center mt-1">+{MOCK_IMMUNIZATIONS.length - 3} more</p>}
+                {(summary?.immunizations?.length ?? 0) > 3 && <p className="text-[10px] text-slate-500 text-center mt-1">+{(summary?.immunizations?.length ?? 0) - 3} more</p>}
               </div>
             )}
           </div>
@@ -394,15 +375,18 @@ export default function PatientDetailPage() {
               Family History
               <button onClick={() => setShowFamilyForm(true)} className="text-emerald-400 hover:text-emerald-300"><Plus className="w-4 h-4" /></button>
             </h3>
-            {MOCK_FAMILY.length === 0 ? (
+            {summaryLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[1, 2].map((i) => <div key={i} className="h-20 bg-slate-800/20 rounded-xl animate-pulse" />)}
+              </div>
+            ) : ((summary?.family_history?.length ?? 0) === 0) ? (
               <p className="text-xs text-slate-500">No family history recorded</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {MOCK_FAMILY.map(f => (
-                  <div key={f.id} className="bg-[#070b13] rounded-xl px-4 py-3 border border-slate-800/60">
+                {(summary?.family_history || []).map((f, i) => (
+                  <div key={`fam-${i}`} className="bg-[#070b13] rounded-xl px-4 py-3 border border-slate-800/60">
                     <p className="text-xs font-semibold text-emerald-400">{f.relationship}</p>
                     <p className="text-sm font-bold text-white mt-0.5">{f.condition}</p>
-                    {f.notes && <p className="text-[10px] text-slate-500 mt-1">{f.notes}</p>}
                   </div>
                 ))}
               </div>
@@ -414,14 +398,29 @@ export default function PatientDetailPage() {
       {/* ── RECORDS TAB ── */}
       {activeTab === "records" && (
         <div className="flex flex-col gap-4">
-          {MOCK_RECORDS.length === 0 ? (
+          {recordsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-800 animate-pulse" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 w-32 bg-slate-800/50 rounded-lg animate-pulse" />
+                      <div className="h-3 w-48 bg-slate-800/30 rounded-lg animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recordsList.length === 0 ? (
             <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-10 text-center">
               <FileText className="w-10 h-10 text-slate-700 mx-auto mb-3" />
               <p className="text-sm text-slate-500">No medical records found</p>
             </div>
           ) : (
-            MOCK_RECORDS.map(r => {
+            recordsList.map((r) => {
               const isExpanded = expandedRecord === r.id;
+              const detail = isExpanded ? expandedRecordDetail : null;
               return (
                 <div key={r.id} className="bg-[#0a1120] border border-slate-800/60 rounded-2xl overflow-hidden">
                   <button onClick={() => setExpandedRecord(isExpanded ? null : r.id)} className="w-full flex items-center justify-between p-5 hover:bg-slate-800/20 transition-colors text-left">
@@ -430,83 +429,101 @@ export default function PatientDetailPage() {
                         <FileText className="w-5 h-5 text-emerald-400" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">{formatDate(r.visitDate)}</p>
+                        <p className="text-sm font-bold text-white">{formatDate(r.visit_date)}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${getVisitTypeColor(r.visitType)}`}>{getVisitTypeLabel(r.visitType)}</span>
-                          <span className="text-[10px] text-slate-500">{r.doctor}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium ${getVisitTypeColor(r.visit_type)}`}>{getVisitTypeLabel(r.visit_type)}</span>
+                          <span className="text-[10px] text-slate-500">{r.doctor_id}</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-slate-500">{r.diagnoses.length} dx · {r.prescriptions.length} rx</span>
+                      {detail && <span className="text-[10px] text-slate-500">{detail.diagnoses.length} dx · {detail.prescriptions.length} rx</span>}
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                     </div>
                   </button>
 
                   {isExpanded && (
                     <div className="px-5 pb-5 pt-0 border-t border-slate-800/60">
-                      {r.chiefComplaint && (
-                        <div className="mt-4">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Chief Complaint</p>
-                          <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{r.chiefComplaint}</p>
+                      {detailLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+                          <span className="text-xs text-slate-500 ml-2">Loading record details...</span>
                         </div>
-                      )}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                        {r.assessment && (
-                          <div>
-                            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Assessment</p>
-                            <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{r.assessment}</p>
-                          </div>
-                        )}
-                        {r.plan && (
-                          <div>
-                            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Plan</p>
-                            <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{r.plan}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {r.vitals.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Vitals</p>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                            {r.vitals.map(v => (
-                              <div key={v.id} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60 text-center">
-                                <p className="text-[10px] text-slate-500">{v.parameter}</p>
-                                <p className="text-sm font-bold text-white">{v.value}<span className="text-[10px] text-slate-500 ml-0.5">{v.unit}</span></p>
+                      ) : detail ? (
+                        <>
+                          {detail.chief_complaint && (
+                            <div className="mt-4">
+                              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Chief Complaint</p>
+                              <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{detail.chief_complaint}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                            {detail.assessment && (
+                              <div>
+                                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Assessment</p>
+                                <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{detail.assessment}</p>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {r.diagnoses.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Diagnoses</p>
-                          <div className="flex flex-wrap gap-2">
-                            {r.diagnoses.map(d => (
-                              <span key={d.id} className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/25 px-2.5 py-1 rounded-lg">{d.name} {d.icdCode && <span className="text-blue-400/60">({d.icdCode})</span>}</span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {r.prescriptions.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Prescriptions</p>
-                          <div className="space-y-1.5">
-                            {r.prescriptions.map(p => (
-                              <div key={p.id} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60 flex items-center justify-between">
-                                <div>
-                                  <p className="text-xs font-semibold text-white">{p.medicine}</p>
-                                  <p className="text-[10px] text-slate-500">{p.dosage} · {p.frequency} · {p.route}{p.durationDays ? ` · ${p.durationDays}d` : ""}</p>
-                                </div>
-                                {p.instructions && <span className="text-[10px] text-slate-500 max-w-[180px] text-right">{p.instructions}</span>}
+                            )}
+                            {detail.plan && (
+                              <div>
+                                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Plan</p>
+                                <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{detail.plan}</p>
                               </div>
-                            ))}
+                            )}
                           </div>
-                        </div>
-                      )}
+
+                          {detail.clinical_notes && (
+                            <div className="mt-4">
+                              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Clinical Notes</p>
+                              <p className="text-xs text-slate-300 bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60">{detail.clinical_notes}</p>
+                            </div>
+                          )}
+
+                          {detail.vitals.length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Vitals</p>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                                {detail.vitals.map((v, vi) => (
+                                  <div key={`vital-${vi}`} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60 text-center">
+                                    <p className="text-[10px] text-slate-500">{v.parameter_name}</p>
+                                    <p className="text-sm font-bold text-white">{v.value}<span className="text-[10px] text-slate-500 ml-0.5">{v.unit}</span></p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {detail.diagnoses.length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Diagnoses</p>
+                              <div className="flex flex-wrap gap-2">
+                                {detail.diagnoses.map((d, di) => (
+                                  <span key={`diag-${di}`} className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/25 px-2.5 py-1 rounded-lg">
+                                    {d.name} {d.icd_code && <span className="text-blue-400/60">({d.icd_code})</span>}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {detail.prescriptions.length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Prescriptions</p>
+                              <div className="space-y-1.5">
+                                {detail.prescriptions.map((p, pi) => (
+                                  <div key={`rx-${pi}`} className="bg-[#070b13] rounded-lg px-3 py-2 border border-slate-800/60 flex items-center justify-between">
+                                    <div>
+                                      <p className="text-xs font-semibold text-white">{p.medicine_name}</p>
+                                      <p className="text-[10px] text-slate-500">{p.dosage} · {p.frequency} · {p.route}{p.duration_days ? ` · ${p.duration_days}d` : ""}</p>
+                                    </div>
+                                    {p.instructions && <span className="text-[10px] text-slate-500 max-w-[180px] text-right">{p.instructions}</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -519,7 +536,12 @@ export default function PatientDetailPage() {
       {/* ── VITALS TAB ── */}
       {activeTab === "vitals" && (
         <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
-          {allVitals.length === 0 ? (
+          {areDetailsLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              <span className="text-xs text-slate-500 ml-2">Loading vitals...</span>
+            </div>
+          ) : allVitals.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-10">No vitals recorded</p>
           ) : (
             <div className="overflow-x-auto">
@@ -533,11 +555,11 @@ export default function PatientDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {allVitals.map(v => (
-                    <tr key={v.id} className="hover:bg-slate-800/20 transition-colors">
+                  {allVitals.map((v, i) => (
+                    <tr key={`vital-${i}`} className="hover:bg-slate-800/20 transition-colors">
                       <td className="py-3 pr-4 text-xs text-slate-400">{formatDate(v.visitDate)}</td>
-                      <td className="py-3 pr-4 text-xs text-slate-300">{v.doctor}</td>
-                      <td className="py-3 pr-4 text-xs text-white">{v.parameter}</td>
+                      <td className="py-3 pr-4 text-xs text-slate-300">{v.doctorId}</td>
+                      <td className="py-3 pr-4 text-xs text-white">{v.parameter_name}</td>
                       <td className="py-3 pr-4 text-xs font-semibold text-white">{v.value} <span className="text-slate-500">{v.unit}</span></td>
                     </tr>
                   ))}
@@ -551,20 +573,25 @@ export default function PatientDetailPage() {
       {/* ── DIAGNOSES TAB ── */}
       {activeTab === "diagnoses" && (
         <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
-          {allDiagnoses.length === 0 ? (
+          {areDetailsLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              <span className="text-xs text-slate-500 ml-2">Loading diagnoses...</span>
+            </div>
+          ) : allDiagnoses.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-10">No diagnoses recorded</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {allDiagnoses.map(d => (
-                <div key={d.id} className="bg-[#070b13] rounded-xl px-4 py-3 border border-slate-800/60">
+              {allDiagnoses.map((d, i) => (
+                <div key={`diag-${i}`} className="bg-[#070b13] rounded-xl px-4 py-3 border border-slate-800/60">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold text-white">{d.name}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
                       d.type === "primary" ? "bg-blue-500/10 text-blue-400" : "bg-slate-800 text-slate-400"
                     }`}>{d.type}</span>
                   </div>
-                  {d.icdCode && <p className="text-[10px] text-slate-500">ICD-10: {d.icdCode}</p>}
-                  <p className="text-[10px] text-slate-500 mt-1">Recorded {formatDate(d.visitDate)} by {d.doctor}</p>
+                  {d.icd_code && <p className="text-[10px] text-slate-500">ICD-10: {d.icd_code}</p>}
+                  <p className="text-[10px] text-slate-500 mt-1">Recorded {formatDate(d.visitDate)} by {d.doctorId}</p>
                 </div>
               ))}
             </div>
@@ -575,7 +602,12 @@ export default function PatientDetailPage() {
       {/* ── PRESCRIPTIONS TAB ── */}
       {activeTab === "prescriptions" && (
         <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
-          {allPrescriptions.length === 0 ? (
+          {areDetailsLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              <span className="text-xs text-slate-500 ml-2">Loading prescriptions...</span>
+            </div>
+          ) : allPrescriptions.length === 0 ? (
             <p className="text-sm text-slate-500 text-center py-10">No prescriptions recorded</p>
           ) : (
             <div className="overflow-x-auto">
@@ -591,14 +623,14 @@ export default function PatientDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {allPrescriptions.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-800/20 transition-colors">
-                      <td className="py-3 pr-4 text-xs font-semibold text-white">{p.medicine}</td>
+                  {allPrescriptions.map((p, i) => (
+                    <tr key={`rx-${i}`} className="hover:bg-slate-800/20 transition-colors">
+                      <td className="py-3 pr-4 text-xs font-semibold text-white">{p.medicine_name}</td>
                       <td className="py-3 pr-4 text-xs text-slate-300">{p.dosage}</td>
                       <td className="py-3 pr-4 text-xs text-slate-300">{p.frequency}</td>
                       <td className="py-3 pr-4 text-xs text-slate-300 capitalize">{p.route}</td>
-                      <td className="py-3 pr-4 text-xs text-slate-300">{p.durationDays}d</td>
-                      <td className="py-3 pr-4 text-xs text-slate-400">{p.doctor}</td>
+                      <td className="py-3 pr-4 text-xs text-slate-300">{p.duration_days ? `${p.duration_days}d` : "—"}</td>
+                      <td className="py-3 pr-4 text-xs text-slate-400">{p.doctorId}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -617,20 +649,24 @@ export default function PatientDetailPage() {
               <Plus className="w-3.5 h-3.5" /> Add Allergy
             </button>
           </div>
-          {MOCK_ALLERGIES.length === 0 ? (
+          {allergiesLoading ? (
+            <div className="space-y-2">
+              {[1, 2].map((i) => <div key={i} className="h-16 bg-slate-800/20 rounded-xl animate-pulse" />)}
+            </div>
+          ) : (allergies?.length ?? 0) === 0 ? (
             <p className="text-sm text-slate-500 text-center py-10">No allergies recorded</p>
           ) : (
             <div className="space-y-2">
-              {MOCK_ALLERGIES.map(a => (
+              {(allergies || []).map((a) => (
                 <div key={a.id} className="flex items-center justify-between bg-[#070b13] rounded-xl px-4 py-3 border border-slate-800/60">
                   <div className="flex items-center gap-3">
                     <AlertTriangle className={`w-4 h-4 ${a.severity === "severe" || a.severity === "life_threatening" ? "text-red-400" : "text-amber-400"}`} />
                     <div>
                       <p className="text-sm font-semibold text-white">{a.allergen}</p>
-                      <p className="text-xs text-slate-500">{a.reaction}</p>
+                      {a.reaction && <p className="text-xs text-slate-500">{a.reaction}</p>}
                     </div>
                   </div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${SEVERITY_COLORS[a.severity]}`}>{a.severity}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${SEVERITY_COLORS[a.severity] || SEVERITY_COLORS.mild}`}>{a.severity}</span>
                 </div>
               ))}
             </div>
@@ -647,7 +683,11 @@ export default function PatientDetailPage() {
               <Plus className="w-3.5 h-3.5" /> Add Immunization
             </button>
           </div>
-          {MOCK_IMMUNIZATIONS.length === 0 ? (
+          {immunizationsLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => <div key={i} className="h-12 bg-slate-800/20 rounded-xl animate-pulse" />)}
+            </div>
+          ) : (immunizations?.length ?? 0) === 0 ? (
             <p className="text-sm text-slate-500 text-center py-10">No immunizations recorded</p>
           ) : (
             <div className="overflow-x-auto">
@@ -658,17 +698,15 @@ export default function PatientDetailPage() {
                     <th className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pb-3 pr-4">Dose</th>
                     <th className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pb-3 pr-4">Date</th>
                     <th className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pb-3 pr-4">Next Due</th>
-                    <th className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pb-3 pr-4">Administered By</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {MOCK_IMMUNIZATIONS.map(i => (
+                  {(immunizations || []).map((i) => (
                     <tr key={i.id} className="hover:bg-slate-800/20 transition-colors">
                       <td className="py-3 pr-4 text-xs font-semibold text-white">{i.vaccine}</td>
-                      <td className="py-3 pr-4 text-xs text-slate-300">{i.dose}</td>
+                      <td className="py-3 pr-4 text-xs text-slate-300">{i.dose ?? "—"}</td>
                       <td className="py-3 pr-4 text-xs text-slate-400">{formatDate(i.date)}</td>
-                      <td className="py-3 pr-4 text-xs">{i.nextDue ? <span className="text-amber-400">{formatDate(i.nextDue)}</span> : <span className="text-slate-600">—</span>}</td>
-                      <td className="py-3 pr-4 text-xs text-slate-400">{i.administeredBy}</td>
+                      <td className="py-3 pr-4 text-xs">{i.next_due ? <span className="text-amber-400">{formatDate(i.next_due)}</span> : <span className="text-slate-600">—</span>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -687,12 +725,16 @@ export default function PatientDetailPage() {
               <Plus className="w-3.5 h-3.5" /> Add Entry
             </button>
           </div>
-          {MOCK_FAMILY.length === 0 ? (
+          {summaryLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => <div key={i} className="h-28 bg-slate-800/20 rounded-xl animate-pulse" />)}
+            </div>
+          ) : ((summary?.family_history?.length ?? 0) === 0) ? (
             <p className="text-sm text-slate-500 text-center py-10">No family history recorded</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MOCK_FAMILY.map(f => (
-                <div key={f.id} className="bg-[#070b13] rounded-xl px-5 py-4 border border-slate-800/60">
+              {(summary?.family_history || []).map((f, i) => (
+                <div key={`fam-${i}`} className="bg-[#070b13] rounded-xl px-5 py-4 border border-slate-800/60">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700">
                       <Users className="w-4 h-4 text-emerald-400" />
@@ -700,7 +742,6 @@ export default function PatientDetailPage() {
                     <p className="text-sm font-semibold text-emerald-400">{f.relationship}</p>
                   </div>
                   <p className="text-base font-bold text-white">{f.condition}</p>
-                  {f.notes && <p className="text-xs text-slate-500 mt-1">{f.notes}</p>}
                 </div>
               ))}
             </div>
@@ -709,17 +750,140 @@ export default function PatientDetailPage() {
       )}
 
       {/* ── Add Allergy Form Modal ── */}
-      {showAllergyForm && <AddFormModal title="Add Allergy" onClose={() => setShowAllergyForm(false)}>
-        <p className="text-xs text-slate-500">Allergy recording form</p>
-      </AddFormModal>}
+      {showAllergyForm && (
+        <AddFormModal title="Add Allergy" onClose={() => { setShowAllergyForm(false); setAllergyForm({ allergen: "", severity: "mild", reaction: "" }); }}>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Allergen</label>
+              <input
+                value={allergyForm.allergen}
+                onChange={(e) => setAllergyForm((f) => ({ ...f, allergen: e.target.value }))}
+                placeholder="e.g. Penicillin"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-600"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Severity</label>
+              <select
+                value={allergyForm.severity}
+                onChange={(e) => setAllergyForm((f) => ({ ...f, severity: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 cursor-pointer"
+              >
+                <option value="mild">Mild</option>
+                <option value="moderate">Moderate</option>
+                <option value="severe">Severe</option>
+                <option value="life_threatening">Life Threatening</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Reaction</label>
+              <input
+                value={allergyForm.reaction}
+                onChange={(e) => setAllergyForm((f) => ({ ...f, reaction: e.target.value }))}
+                placeholder="e.g. Skin rash, itching"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-600"
+              />
+            </div>
+            <button
+              onClick={handleAddAllergy}
+              disabled={!allergyForm.allergen.trim() || addAllergyMutation.isPending}
+              className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {addAllergyMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Allergy
+            </button>
+          </div>
+        </AddFormModal>
+      )}
 
-      {showImmunizationForm && <AddFormModal title="Add Immunization" onClose={() => setShowImmunizationForm(false)}>
-        <p className="text-xs text-slate-500">Immunization recording form</p>
-      </AddFormModal>}
+      {/* ── Add Immunization Form Modal ── */}
+      {showImmunizationForm && (
+        <AddFormModal title="Add Immunization" onClose={() => { setShowImmunizationForm(false); setImmunizationForm({ vaccine: "", dose: 1, date: "", next_due: "" }); }}>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Vaccine</label>
+              <input
+                value={immunizationForm.vaccine}
+                onChange={(e) => setImmunizationForm((f) => ({ ...f, vaccine: e.target.value }))}
+                placeholder="e.g. Influenza (Seasonal)"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-600"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Dose</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={immunizationForm.dose}
+                  onChange={(e) => setImmunizationForm((f) => ({ ...f, dose: Number(e.target.value) }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Date</label>
+                <input
+                  type="date"
+                  value={immunizationForm.date}
+                  onChange={(e) => setImmunizationForm((f) => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Next Due Date (optional)</label>
+              <input
+                type="date"
+                value={immunizationForm.next_due}
+                onChange={(e) => setImmunizationForm((f) => ({ ...f, next_due: e.target.value }))}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            <button
+              onClick={handleAddImmunization}
+              disabled={!immunizationForm.vaccine.trim() || !immunizationForm.date || addImmunizationMutation.isPending}
+              className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {addImmunizationMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Immunization
+            </button>
+          </div>
+        </AddFormModal>
+      )}
 
-      {showFamilyForm && <AddFormModal title="Add Family History" onClose={() => setShowFamilyForm(false)}>
-        <p className="text-xs text-slate-500">Family history entry form</p>
-      </AddFormModal>}
+      {/* ── Add Family History Form Modal ── */}
+      {showFamilyForm && (
+        <AddFormModal title="Add Family History" onClose={() => { setShowFamilyForm(false); setFamilyForm({ relationship: "", condition: "" }); }}>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Relationship</label>
+              <input
+                value={familyForm.relationship}
+                onChange={(e) => setFamilyForm((f) => ({ ...f, relationship: e.target.value }))}
+                placeholder="e.g. Father, Mother"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-600"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Condition</label>
+              <input
+                value={familyForm.condition}
+                onChange={(e) => setFamilyForm((f) => ({ ...f, condition: e.target.value }))}
+                placeholder="e.g. Hypertension, Diabetes"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder:text-slate-600"
+              />
+            </div>
+            <button
+              onClick={handleAddFamilyHistory}
+              disabled={!familyForm.relationship.trim() || !familyForm.condition.trim() || addFamilyHistoryMutation.isPending}
+              className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {addFamilyHistoryMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Save Entry
+            </button>
+          </div>
+        </AddFormModal>
+      )}
     </div>
   );
 }

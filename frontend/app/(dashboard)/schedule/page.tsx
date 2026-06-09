@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,13 +11,24 @@ import {
   X,
   CheckCircle2,
   Ban,
+  AlertCircle,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
+import {
+  useDoctors,
+  useWeeklySchedule,
+  useCreateSchedule,
+  useTimeOffRequests,
+  useCreateTimeOff,
+  useApproveTimeOff,
+  useAppointments,
+} from "@/lib/api-hooks";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface Doctor {
+interface DoctorDisplay {
   id: string;
   name: string;
   nameBn: string;
@@ -25,80 +36,36 @@ interface Doctor {
   isActive: boolean;
 }
 
-interface ScheduleEntry {
+interface ScheduleEntryDisplay {
   id: string;
   doctorId: string;
   doctorName: string;
-  shiftType: "morning" | "afternoon" | "evening" | "full_day";
+  shiftType: string;
   startTime: string;
   endTime: string;
   maxPatients: number;
   room: string;
 }
 
-interface Appointment {
+interface AppointmentDisplay {
   id: string;
   patientName: string;
   phone: string;
   doctorName: string;
   time: string;
-  status: "Completed" | "Confirmed" | "Pending Payment" | "Cancelled";
+  status: string;
   fee: number;
+  dateKey: string;
 }
 
-interface TimeOffEntry {
+interface TimeOffEntryDisplay {
   id: string;
   doctorName: string;
   startDate: string;
   endDate: string;
   reason: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: string;
 }
-
-// ── Mock Data ─────────────────────────────────────────────────────────────────
-const DOCTORS: Doctor[] = [
-  { id: "d1", name: "Dr. Shah Alam", nameBn: "ডা. শাহ আলম", specialty: "Cardiology", isActive: true },
-  { id: "d2", name: "Dr. Laila Bilkis", nameBn: "ডা. লায়লা বিলকিস", specialty: "Gynaecology", isActive: true },
-  { id: "d3", name: "Dr. M. Rahman", nameBn: "ডা. এম. রহমান", specialty: "Orthopedics", isActive: true },
-  { id: "d4", name: "Dr. Farzana Huq", nameBn: "ডা. ফারজানা হক", specialty: "Medicine", isActive: true },
-  { id: "d5", name: "Dr. Kamal Uddin", nameBn: "ডা. কামাল উদ্দিন", specialty: "Pediatrics", isActive: false },
-];
-
-const SCHEDULE_ENTRIES: Record<string, ScheduleEntry[]> = {
-  "2026-06-07": [
-    { id: "s1", doctorId: "d1", doctorName: "Dr. Shah Alam", shiftType: "morning", startTime: "09:00", endTime: "13:00", maxPatients: 20, room: "201" },
-    { id: "s2", doctorId: "d2", doctorName: "Dr. Laila Bilkis", shiftType: "morning", startTime: "09:00", endTime: "14:00", maxPatients: 25, room: "301" },
-    { id: "s3", doctorId: "d3", doctorName: "Dr. M. Rahman", shiftType: "evening", startTime: "16:00", endTime: "20:00", maxPatients: 15, room: "202" },
-  ],
-  "2026-06-08": [
-    { id: "s4", doctorId: "d1", doctorName: "Dr. Shah Alam", shiftType: "afternoon", startTime: "13:00", endTime: "17:00", maxPatients: 18, room: "201" },
-    { id: "s5", doctorId: "d3", doctorName: "Dr. M. Rahman", shiftType: "morning", startTime: "09:00", endTime: "14:00", maxPatients: 20, room: "202" },
-    { id: "s6", doctorId: "d4", doctorName: "Dr. Farzana Huq", shiftType: "full_day", startTime: "09:00", endTime: "18:00", maxPatients: 30, room: "101" },
-  ],
-  "2026-06-09": [
-    { id: "s7", doctorId: "d2", doctorName: "Dr. Laila Bilkis", shiftType: "morning", startTime: "09:00", endTime: "14:00", maxPatients: 25, room: "301" },
-    { id: "s8", doctorId: "d4", doctorName: "Dr. Farzana Huq", shiftType: "morning", startTime: "09:00", endTime: "13:00", maxPatients: 20, room: "101" },
-  ],
-};
-
-const APPOINTMENTS: Appointment[] = [
-  { id: "A001", patientName: "Imran Khan", phone: "01711223344", doctorName: "Dr. Shah Alam", time: "09:30 AM", status: "Completed", fee: 500 },
-  { id: "A002", patientName: "Farhana Yasmin", phone: "01988776655", doctorName: "Dr. Laila Bilkis", time: "10:15 AM", status: "Confirmed", fee: 500 },
-  { id: "A003", patientName: "Tariqul Islam", phone: "01522334455", doctorName: "Dr. M. Rahman", time: "11:00 AM", status: "Pending Payment", fee: 500 },
-  { id: "A004", patientName: "Nusrat Jahan", phone: "01844556677", doctorName: "Dr. Laila Bilkis", time: "11:45 AM", status: "Confirmed", fee: 500 },
-  { id: "A005", patientName: "Abul Kalam", phone: "01311223344", doctorName: "Dr. Shah Alam", time: "12:30 PM", status: "Cancelled", fee: 0 },
-  { id: "A006", patientName: "Kazi Arif", phone: "01755667788", doctorName: "Dr. M. Rahman", time: "02:00 PM", status: "Confirmed", fee: 500 },
-  { id: "A007", patientName: "Sabina Yeasmin", phone: "01622334455", doctorName: "Dr. Shah Alam", time: "03:30 PM", status: "Pending Payment", fee: 500 },
-  { id: "A008", patientName: "Rafiq Hasan", phone: "01799887766", doctorName: "Dr. Farzana Huq", time: "10:00 AM", status: "Confirmed", fee: 400 },
-  { id: "A009", patientName: "Sharmin Akter", phone: "01911223344", doctorName: "Dr. Farzana Huq", time: "11:30 AM", status: "Confirmed", fee: 400 },
-  { id: "A010", patientName: "Jahangir Alam", phone: "01833445566", doctorName: "Dr. Laila Bilkis", time: "05:00 PM", status: "Pending Payment", fee: 500 },
-];
-
-const TIME_OFF: TimeOffEntry[] = [
-  { id: "to1", doctorName: "Dr. Kamal Uddin", startDate: "2026-06-10", endDate: "2026-06-14", reason: "Annual leave", status: "Approved" },
-  { id: "to2", doctorName: "Dr. M. Rahman", startDate: "2026-06-15", endDate: "2026-06-15", reason: "Personal", status: "Pending" },
-  { id: "to3", doctorName: "Dr. Shah Alam", startDate: "2026-06-20", endDate: "2026-06-22", reason: "Conference", status: "Pending" },
-];
 
 // ── Schemas ────────────────────────────────────────────────────────────────────
 const appointmentSchema = z.object({
@@ -131,6 +98,7 @@ type ScheduleForm = z.infer<typeof scheduleSchema>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_SHORTCODES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const SHIFT_LABELS: Record<string, string> = {
   morning: "Morning",
   afternoon: "Afternoon",
@@ -150,27 +118,53 @@ function formatDateKey(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function getScheduleForDate(entries: Record<string, ScheduleEntry[]>, dateKey: string): ScheduleEntry[] {
-  return entries[dateKey] || [];
+function parseTimeFromIso(isoStr: string): string {
+  const parts = isoStr.split("T")[1]?.split(":");
+  if (!parts || parts.length < 2) return "";
+  const h = parseInt(parts[0], 10);
+  const m = parts[1];
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${String(h12).padStart(2, "0")}:${m} ${ampm}`;
 }
 
 function getStatusBadge(status: string) {
   switch (status) {
-    case "Completed": return "bg-slate-800 text-slate-400 border border-slate-700/50";
-    case "Confirmed": return "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
-    case "Pending Payment": return "bg-amber-500/10 text-amber-400 border border-amber-500/25";
-    case "Cancelled": return "bg-red-500/10 text-red-400 border border-red-500/25";
-    default: return "bg-slate-800 text-slate-400 border border-slate-700/50";
+    case "Completed":
+      return "bg-slate-800 text-slate-400 border border-slate-700/50";
+    case "Confirmed":
+      return "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
+    case "Pending Payment":
+      return "bg-amber-500/10 text-amber-400 border border-amber-500/25";
+    case "Cancelled":
+      return "bg-red-500/10 text-red-400 border border-red-500/25";
+    default:
+      return "bg-slate-800 text-slate-400 border border-slate-700/50";
   }
 }
 
 function getTimeOffBadge(status: string) {
   switch (status) {
-    case "Approved": return "bg-emerald-500/10 text-emerald-400";
-    case "Pending": return "bg-amber-500/10 text-amber-400";
-    case "Rejected": return "bg-red-500/10 text-red-400";
-    default: return "bg-slate-800 text-slate-400";
+    case "Approved":
+      return "bg-emerald-500/10 text-emerald-400";
+    case "Pending":
+      return "bg-amber-500/10 text-amber-400";
+    case "Rejected":
+      return "bg-red-500/10 text-red-400";
+    default:
+      return "bg-slate-800 text-slate-400";
   }
+}
+
+function sanitizeStatus(s: string): string {
+  const map: Record<string, string> = {
+    confirmed: "Confirmed",
+    completed: "Completed",
+    pending_payment: "Pending Payment",
+    cancelled: "Cancelled",
+    no_show: "No Show",
+  };
+  return map[s.toLowerCase()] || s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -183,35 +177,172 @@ export default function SchedulePage() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showTimeOffModal, setShowTimeOffModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedDayAppointments, setSelectedDayAppointments] = useState<Appointment[]>([]);
-  const [selectedDaySchedules, setSelectedDaySchedules] = useState<ScheduleEntry[]>([]);
+  const [selectedDayAppointments, setSelectedDayAppointments] = useState<AppointmentDisplay[]>([]);
+  const [selectedDaySchedules, setSelectedDaySchedules] = useState<ScheduleEntryDisplay[]>([]);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
 
   const aptForm = useForm<AppointmentForm>({ resolver: zodResolver(appointmentSchema) });
   const toForm = useForm<TimeOffForm>({ resolver: zodResolver(timeOffSchema) });
   const schForm = useForm<ScheduleForm>({ resolver: zodResolver(scheduleSchema) });
 
-  // Calendar grid
+  // ── API Hooks ──────────────────────────────────────────────────────────────
+  const {
+    data: doctorsData,
+    isLoading: doctorsLoading,
+    error: doctorsError,
+  } = useDoctors();
+  const {
+    data: scheduleData,
+    isLoading: scheduleLoading,
+  } = useWeeklySchedule();
+  const {
+    data: timeOffData,
+    isLoading: timeOffLoading,
+    error: timeOffError,
+  } = useTimeOffRequests();
+  const {
+    data: appointmentsData,
+    isLoading: aptsLoading,
+  } = useAppointments();
+  const createSchedule = useCreateSchedule();
+  const createTimeOff = useCreateTimeOff();
+  const approveTimeOff = useApproveTimeOff();
+
+  // ── Derived Data ───────────────────────────────────────────────────────────
+  const DOCTORS: DoctorDisplay[] = useMemo(
+    () =>
+      (doctorsData || []).map((d) => ({
+        id: d.id,
+        name: d.name,
+        nameBn: d.name_bn || "",
+        specialty: d.specialty || "",
+        isActive: d.is_active ?? true,
+      })),
+    [doctorsData],
+  );
+
+  const getScheduleForDate = useMemo(() => {
+    const schedule = scheduleData?.schedule;
+    return (dateKey: string): ScheduleEntryDisplay[] => {
+      if (!schedule) return [];
+      const date = new Date(dateKey + "T12:00:00");
+      const dayCode = DAY_SHORTCODES[date.getDay()];
+      const entries = schedule[dayCode] || [];
+      return entries.map((s) => ({
+        id: s.id,
+        doctorId: s.doctor_id,
+        doctorName: DOCTORS.find((d) => d.id === s.doctor_id)?.name || "",
+        shiftType: s.shift_type,
+        startTime: s.start_time.slice(0, 5),
+        endTime: s.end_time.slice(0, 5),
+        maxPatients: s.max_patients,
+        room: s.room_number || "",
+      }));
+    };
+  }, [scheduleData, DOCTORS]);
+
+  const APPOINTMENTS: AppointmentDisplay[] = useMemo(
+    () =>
+      (appointmentsData || []).map((a) => ({
+        id: a.id,
+        patientName: a.patient_id.slice(0, 8),
+        phone: "",
+        doctorName: DOCTORS.find((d) => d.id === a.doctor_id)?.name || "",
+        time: parseTimeFromIso(a.scheduled_at),
+        status: sanitizeStatus(a.status),
+        fee: a.consultation_fee,
+        dateKey: a.scheduled_at?.split("T")[0] || "",
+      })),
+    [appointmentsData, DOCTORS],
+  );
+
+  const TIME_OFF: TimeOffEntryDisplay[] = useMemo(
+    () =>
+      (timeOffData || []).map((t) => ({
+        id: t.id,
+        doctorName: DOCTORS.find((d) => d.id === t.doctor_id)?.name || "",
+        startDate: t.start_date,
+        endDate: t.end_date,
+        reason: t.reason || "",
+        status: t.status.charAt(0).toUpperCase() + t.status.slice(1).toLowerCase(),
+      })),
+    [timeOffData, DOCTORS],
+  );
+
+  // ── Loading / Error states ─────────────────────────────────────────────────
+  const isLoading = doctorsLoading || scheduleLoading || aptsLoading || timeOffLoading;
+  const fetchError = doctorsError || timeOffError;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-6 max-w-7xl mx-auto animate-pulse">
+        <div className="h-8 w-48 bg-slate-800 rounded-lg" />
+        <div className="h-4 w-64 bg-slate-800 rounded-lg" />
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-36 bg-slate-800 rounded-xl" />
+          <div className="h-10 w-40 bg-slate-800 rounded-xl" />
+        </div>
+        <div className="h-10 w-40 bg-slate-800 rounded-xl" />
+        <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-5">
+            <div className="h-5 w-8 bg-slate-800 rounded" />
+            <div className="h-6 w-48 bg-slate-800 rounded" />
+            <div className="h-5 w-8 bg-slate-800 rounded" />
+          </div>
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {DAYS.map((d) => (
+              <div key={d} className="h-4 bg-slate-800 rounded" />
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: 35 }).map((_, i) => (
+              <div key={i} className="h-[72px] bg-slate-800/60 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center max-w-7xl mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+          <AlertCircle className="w-7 h-7 text-red-400" />
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2">Failed to load schedule</h3>
+        <p className="text-sm text-slate-400 max-w-md">
+          Something went wrong while fetching schedule data. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
+  // ── Calendar helpers ───────────────────────────────────────────────────────
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
   const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
 
   function prevMonth() {
-    if (currentMonth === 0) { setCurrentYear(y => y - 1); setCurrentMonth(11); }
-    else setCurrentMonth(m => m - 1);
+    if (currentMonth === 0) {
+      setCurrentYear((y) => y - 1);
+      setCurrentMonth(11);
+    } else setCurrentMonth((m) => m - 1);
     setSelectedDate(null);
   }
 
   function nextMonth() {
-    if (currentMonth === 11) { setCurrentYear(y => y + 1); setCurrentMonth(0); }
-    else setCurrentMonth(m => m + 1);
+    if (currentMonth === 11) {
+      setCurrentYear((y) => y + 1);
+      setCurrentMonth(0);
+    } else setCurrentMonth((m) => m + 1);
     setSelectedDate(null);
   }
 
   function handleDayClick(day: number) {
     const key = formatDateKey(currentYear, currentMonth, day);
     setSelectedDate(key);
-    setSelectedDayAppointments(APPOINTMENTS.filter((_, i) => i % 7 === day % 7));
-    setSelectedDaySchedules(getScheduleForDate(SCHEDULE_ENTRIES, key));
+    setSelectedDayAppointments(APPOINTMENTS.filter((a) => a.dateKey === key));
+    setSelectedDaySchedules(getScheduleForDate(key));
     setActiveTab("calendar");
   }
 
@@ -221,40 +352,48 @@ export default function SchedulePage() {
   }
 
   const onAppointmentSubmit = (data: AppointmentForm) => {
-    const doc = DOCTORS.find(d => d.id === data.doctorId);
-    const newApt: Appointment = {
-      id: `A${String(APPOINTMENTS.length + 1).padStart(3, "0")}`,
-      patientName: data.patientName,
-      phone: data.phone,
-      doctorName: doc?.name || "",
-      time: data.time,
-      status: "Confirmed",
-      fee: 500,
-    };
+    const doc = DOCTORS.find((d) => d.id === data.doctorId);
     showFeedback(`Appointment booked for ${data.patientName} with ${doc?.name}`);
     setShowAppointmentModal(false);
     aptForm.reset();
   };
 
   const onTimeOffSubmit = (data: TimeOffForm) => {
-    const doc = DOCTORS.find(d => d.id === data.doctorId);
+    createTimeOff.mutate({
+      doctor_id: data.doctorId,
+      start_date: data.startDate,
+      end_date: data.endDate,
+      reason: data.reason,
+    });
+    const doc = DOCTORS.find((d) => d.id === data.doctorId);
     showFeedback(`Time-off request submitted for ${doc?.name}`);
     setShowTimeOffModal(false);
     toForm.reset();
   };
 
   const onScheduleSubmit = (data: ScheduleForm) => {
-    const doc = DOCTORS.find(d => d.id === data.doctorId);
-    showFeedback(`Schedule created for ${doc?.name} — ${SHIFT_LABELS[data.shiftType]}`);
+    createSchedule.mutate({
+      doctor_id: data.doctorId,
+      day: data.dayOfWeek,
+      shift_type: data.shiftType,
+      start_time: data.startTime,
+      end_time: data.endTime,
+      max_patients: parseInt(data.maxPatients, 10),
+      room_number: data.room || undefined,
+    });
+    const doc = DOCTORS.find((d) => d.id === data.doctorId);
+    showFeedback(`Schedule created for ${doc?.name} — ${SHIFT_LABELS[data.shiftType] || data.shiftType}`);
     setShowScheduleModal(false);
     schForm.reset();
   };
 
   const handleApproveTimeOff = (id: string) => {
+    approveTimeOff.mutate({ id, approved: true });
     showFeedback("Time-off request approved");
   };
 
   const handleRejectTimeOff = (id: string) => {
+    approveTimeOff.mutate({ id, approved: false });
     showFeedback("Time-off request rejected");
   };
 
@@ -276,7 +415,10 @@ export default function SchedulePage() {
     calendarCells.push(d);
   }
 
-  const monthName = new Date(currentYear, currentMonth).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const monthName = new Date(currentYear, currentMonth).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
@@ -288,7 +430,10 @@ export default function SchedulePage() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => { setShowScheduleModal(true); setActiveTab("add"); }}
+            onClick={() => {
+              setShowScheduleModal(true);
+              setActiveTab("add");
+            }}
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" /> Add Schedule
@@ -317,7 +462,7 @@ export default function SchedulePage() {
         {[
           { key: "calendar", label: "Calendar" },
           { key: "timeoff", label: "Time Off" },
-        ].map(t => (
+        ].map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key as typeof activeTab)}
@@ -338,19 +483,27 @@ export default function SchedulePage() {
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl p-5">
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-5">
-              <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 transition-colors">
+              <button
+                onClick={prevMonth}
+                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 transition-colors"
+              >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <span className="text-lg font-bold text-white">{monthName}</span>
-              <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 transition-colors">
+              <button
+                onClick={nextMonth}
+                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 transition-colors"
+              >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </div>
 
             {/* Day Headers */}
             <div className="grid grid-cols-7 gap-1 mb-1">
-              {DAYS.map(d => (
-                <div key={d} className="text-center text-xs font-semibold text-slate-500 py-2">{d}</div>
+              {DAYS.map((d) => (
+                <div key={d} className="text-center text-xs font-semibold text-slate-500 py-2">
+                  {d}
+                </div>
               ))}
             </div>
 
@@ -360,10 +513,10 @@ export default function SchedulePage() {
                 if (day === null) return <div key={`empty-${i}`} />;
                 const dateKey = formatDateKey(currentYear, currentMonth, day);
                 const isSel = selectedDate === dateKey;
-                const dayAppts = APPOINTMENTS.filter((_, idx) => idx % 7 === day % 7);
-                const daySchedules = getScheduleForDate(SCHEDULE_ENTRIES, dateKey);
+                const dayAppts = APPOINTMENTS.filter((a) => a.dateKey === dateKey);
+                const daySchedules = getScheduleForDate(dateKey);
                 const isFri = isFriday(day);
-                const confCount = dayAppts.filter(a => a.status !== "Cancelled").length;
+                const confCount = dayAppts.filter((a) => a.status !== "Cancelled").length;
 
                 return (
                   <button
@@ -379,7 +532,11 @@ export default function SchedulePage() {
                         : "bg-transparent border-transparent text-slate-400 hover:bg-slate-800/40"
                     }`}
                   >
-                    <span className={`text-xs font-bold ${isToday(day) ? "text-emerald-400" : ""} ${isFri ? "text-amber-400" : ""}`}>
+                    <span
+                      className={`text-xs font-bold ${isToday(day) ? "text-emerald-400" : ""} ${
+                        isFri ? "text-amber-400" : ""
+                      }`}
+                    >
                       {day}
                     </span>
                     {isFri && <span className="text-[8px] text-amber-500/60 font-medium leading-none">Jummah</span>}
@@ -390,8 +547,12 @@ export default function SchedulePage() {
                     )}
                     {daySchedules.length > 0 && !isFri && (
                       <div className="flex flex-wrap gap-0.5 mt-0.5 justify-center">
-                        {daySchedules.slice(0, 2).map(s => (
-                          <span key={s.id} className="w-1.5 h-1.5 rounded-full bg-blue-400/60" title={s.doctorName} />
+                        {daySchedules.slice(0, 2).map((s) => (
+                          <span
+                            key={s.id}
+                            className="w-1.5 h-1.5 rounded-full bg-blue-400/60"
+                            title={s.doctorName}
+                          />
                         ))}
                         {daySchedules.length > 2 && (
                           <span className="text-[8px] text-blue-400/60">+{daySchedules.length - 2}</span>
@@ -428,12 +589,19 @@ export default function SchedulePage() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-base font-bold text-white">
-                    {new Date(selectedDate).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+                    {new Date(selectedDate).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">{selectedDaySchedules.length} doctors on duty</p>
                 </div>
                 <button
-                  onClick={() => { setShowAppointmentModal(true); aptForm.setValue("time", "10:00 AM"); }}
+                  onClick={() => {
+                    setShowAppointmentModal(true);
+                    aptForm.setValue("time", "10:00 AM");
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] rounded-lg transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" /> Book
@@ -443,20 +611,29 @@ export default function SchedulePage() {
               {/* Doctors on duty */}
               {selectedDaySchedules.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Doctors On Duty</h4>
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                    Doctors On Duty
+                  </h4>
                   <div className="flex flex-col gap-2">
-                    {selectedDaySchedules.map(s => (
-                      <div key={s.id} className="flex items-center justify-between bg-[#070b13] rounded-lg p-2.5 border border-slate-800/60">
+                    {selectedDaySchedules.map((s) => (
+                      <div
+                        key={s.id}
+                        className="flex items-center justify-between bg-[#070b13] rounded-lg p-2.5 border border-slate-800/60"
+                      >
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
                             <User className="w-3.5 h-3.5 text-emerald-400" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-white">{s.doctorName}</p>
-                            <p className="text-[10px] text-slate-500">{s.startTime}–{s.endTime} · {SHIFT_LABELS[s.shiftType]} · Room {s.room}</p>
+                            <p className="text-[10px] text-slate-500">
+                              {s.startTime}–{s.endTime} · {SHIFT_LABELS[s.shiftType] || s.shiftType} · Room {s.room}
+                            </p>
                           </div>
                         </div>
-                        <span className="text-[10px] text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded-md">{s.maxPatients} slots</span>
+                        <span className="text-[10px] text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded-md">
+                          {s.maxPatients} slots
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -468,18 +645,29 @@ export default function SchedulePage() {
                 <div>
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Appointments</h4>
                   <div className="flex flex-col gap-1.5 max-h-80 overflow-y-auto">
-                    {selectedDayAppointments.map(apt => (
-                      <div key={apt.id} className="bg-[#070b13] rounded-lg p-2.5 border border-slate-800/60">
+                    {selectedDayAppointments.map((apt) => (
+                      <div
+                        key={apt.id}
+                        className="bg-[#070b13] rounded-lg p-2.5 border border-slate-800/60"
+                      >
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-semibold text-white">{apt.patientName}</span>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getStatusBadge(apt.status)}`}>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${getStatusBadge(apt.status)}`}
+                          >
                             {apt.status}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{apt.time}</span>
-                            <span className="flex items-center gap-1"><User className="w-3 h-3" />{apt.doctorName}</span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {apt.time}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <User className="w-3 h-3" />
+                              {apt.doctorName}
+                            </span>
                           </div>
                           <span className="text-[11px] font-semibold text-slate-300">৳{apt.fee}</span>
                         </div>
@@ -524,15 +712,20 @@ export default function SchedulePage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {TIME_OFF.map(to => (
-                    <div key={to.id} className="flex items-center justify-between bg-[#070b13] rounded-xl p-4 border border-slate-800/60">
+                  {TIME_OFF.map((to) => (
+                    <div
+                      key={to.id}
+                      className="flex items-center justify-between bg-[#070b13] rounded-xl p-4 border border-slate-800/60"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center border border-slate-700">
                           <Clock className="w-5 h-5 text-slate-400" />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-white">{to.doctorName}</p>
-                          <p className="text-xs text-slate-500">{to.startDate} → {to.endDate}</p>
+                          <p className="text-xs text-slate-500">
+                            {to.startDate} → {to.endDate}
+                          </p>
                           <p className="text-xs text-slate-500 mt-0.5">{to.reason}</p>
                         </div>
                       </div>
@@ -574,40 +767,85 @@ export default function SchedulePage() {
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl w-full max-w-md p-6 mx-4 shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">Book Appointment</h3>
-              <button onClick={() => setShowAppointmentModal(false)} className="p-1 rounded-lg hover:bg-slate-800 text-slate-400">
+              <button
+                onClick={() => setShowAppointmentModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={aptForm.handleSubmit(onAppointmentSubmit)} className="flex flex-col gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Patient Name</label>
-                <input {...aptForm.register("patientName")} placeholder="e.g. Imran Khan" className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors" />
-                {aptForm.formState.errors.patientName && <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.patientName.message}</p>}
+                <input
+                  {...aptForm.register("patientName")}
+                  placeholder="e.g. Imran Khan"
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                />
+                {aptForm.formState.errors.patientName && (
+                  <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.patientName.message}</p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Phone</label>
-                <input {...aptForm.register("phone")} placeholder="01711223344" className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors" />
-                {aptForm.formState.errors.phone && <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.phone.message}</p>}
+                <input
+                  {...aptForm.register("phone")}
+                  placeholder="01711223344"
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                />
+                {aptForm.formState.errors.phone && (
+                  <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.phone.message}</p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Doctor</label>
-                <select {...aptForm.register("doctorId")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
+                <select
+                  {...aptForm.register("doctorId")}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                >
                   <option value="">Select doctor</option>
-                  {DOCTORS.filter(d => d.isActive).map(d => (
-                    <option key={d.id} value={d.id}>{d.name} — {d.specialty}</option>
+                  {DOCTORS.filter((d) => d.isActive).map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} — {d.specialty}
+                    </option>
                   ))}
                 </select>
-                {aptForm.formState.errors.doctorId && <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.doctorId.message}</p>}
+                {aptForm.formState.errors.doctorId && (
+                  <p className="text-[10px] text-red-400 mt-1">{aptForm.formState.errors.doctorId.message}</p>
+                )}
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Time</label>
-                <select {...aptForm.register("time")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
-                  {["09:00 AM","09:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM","12:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM","04:00 PM","05:00 PM"].map(t => (
-                    <option key={t} value={t}>{t}</option>
+                <select
+                  {...aptForm.register("time")}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                >
+                  {[
+                    "09:00 AM",
+                    "09:30 AM",
+                    "10:00 AM",
+                    "10:30 AM",
+                    "11:00 AM",
+                    "11:30 AM",
+                    "12:00 PM",
+                    "12:30 PM",
+                    "02:00 PM",
+                    "02:30 PM",
+                    "03:00 PM",
+                    "03:30 PM",
+                    "04:00 PM",
+                    "05:00 PM",
+                  ].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
                   ))}
                 </select>
               </div>
-              <button type="submit" className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors">
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors"
+              >
                 Book Appointment
               </button>
             </form>
@@ -621,35 +859,58 @@ export default function SchedulePage() {
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl w-full max-w-md p-6 mx-4 shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">Request Time Off</h3>
-              <button onClick={() => setShowTimeOffModal(false)} className="p-1 rounded-lg hover:bg-slate-800 text-slate-400">
+              <button
+                onClick={() => setShowTimeOffModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={toForm.handleSubmit(onTimeOffSubmit)} className="flex flex-col gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Doctor</label>
-                <select {...toForm.register("doctorId")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
+                <select
+                  {...toForm.register("doctorId")}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                >
                   <option value="">Select doctor</option>
-                  {DOCTORS.map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
+                  {DOCTORS.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Start Date</label>
-                  <input type="date" {...toForm.register("startDate")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                  <input
+                    type="date"
+                    {...toForm.register("startDate")}
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">End Date</label>
-                  <input type="date" {...toForm.register("endDate")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                  <input
+                    type="date"
+                    {...toForm.register("endDate")}
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Reason</label>
-                <input {...toForm.register("reason")} placeholder="e.g. Annual leave, Personal" className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                <input
+                  {...toForm.register("reason")}
+                  placeholder="e.g. Annual leave, Personal"
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                />
               </div>
-              <button type="submit" className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors">
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors"
+              >
                 Submit Request
               </button>
             </form>
@@ -663,33 +924,49 @@ export default function SchedulePage() {
           <div className="bg-[#0a1120] border border-slate-800/60 rounded-2xl w-full max-w-md p-6 mx-4 shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-white">Add Doctor Schedule</h3>
-              <button onClick={() => setShowScheduleModal(false)} className="p-1 rounded-lg hover:bg-slate-800 text-slate-400">
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={schForm.handleSubmit(onScheduleSubmit)} className="flex flex-col gap-4">
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Doctor</label>
-                <select {...schForm.register("doctorId")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
+                <select
+                  {...schForm.register("doctorId")}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                >
                   <option value="">Select doctor</option>
-                  {DOCTORS.filter(d => d.isActive).map(d => (
-                    <option key={d.id} value={d.id}>{d.name}</option>
+                  {DOCTORS.filter((d) => d.isActive).map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Day of Week</label>
-                <select {...schForm.register("dayOfWeek")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
+                <select
+                  {...schForm.register("dayOfWeek")}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                >
                   <option value="">Select day</option>
-                  {["Sun","Mon","Tue","Wed","Thu","Sat"].map(d => (
-                    <option key={d} value={d.toLowerCase()}>{d}</option>
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Sat"].map((d) => (
+                    <option key={d} value={d.toLowerCase()}>
+                      {d}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Shift Type</label>
-                  <select {...schForm.register("shiftType")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors">
+                  <select
+                    {...schForm.register("shiftType")}
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  >
                     <option value="">Select shift</option>
                     <option value="morning">Morning</option>
                     <option value="afternoon">Afternoon</option>
@@ -699,24 +976,44 @@ export default function SchedulePage() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Room</label>
-                  <input {...schForm.register("room")} placeholder="e.g. 201" className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                  <input
+                    {...schForm.register("room")}
+                    placeholder="e.g. 201"
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Start Time</label>
-                  <input type="time" {...schForm.register("startTime")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                  <input
+                    type="time"
+                    {...schForm.register("startTime")}
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-slate-400 mb-1.5 block">End Time</label>
-                  <input type="time" {...schForm.register("endTime")} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                  <input
+                    type="time"
+                    {...schForm.register("endTime")}
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                  />
                 </div>
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-400 mb-1.5 block">Max Patients</label>
-                <input type="number" {...schForm.register("maxPatients")} defaultValue={20} className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors" />
+                <input
+                  type="number"
+                  {...schForm.register("maxPatients")}
+                  defaultValue={20}
+                  className="w-full bg-[#070b13] border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500/40 transition-colors"
+                />
               </div>
-              <button type="submit" className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors">
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-[#070b13] font-bold text-sm rounded-xl transition-colors"
+              >
                 Create Schedule
               </button>
             </form>

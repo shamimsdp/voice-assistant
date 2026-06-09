@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
@@ -14,29 +14,18 @@ import {
   CheckCircle,
   Sparkles,
   Search,
-  ChevronRight,
-  FileText,
   MessageSquare,
 } from "lucide-react";
-import { api } from "@/lib/api";
-
-interface Agent {
-  id: string;
-  name: string;
-  voice: string;
-  tone: string;
-  greeting_message: string | null;
-  system_prompt: string | null;
-  is_active: boolean;
-  is_predefined: boolean;
-  service_ids: string[];
-}
-
-interface Service {
-  id: string;
-  name: string;
-  category: string | null;
-}
+import {
+  useAgents,
+  useServices,
+  useCreateAgent,
+  useUpdateAgent,
+  useToggleAgent,
+  useDeleteAgent,
+  useAssignAgentServices,
+} from "@/lib/api-hooks";
+import type { Agent, Service } from "@/lib/api-hooks";
 
 const TONES = ["professional", "friendly", "casual", "empathetic"];
 const VOICES = ["Clara", "Warm", "Serious", "Gentle", "Professional"];
@@ -50,81 +39,70 @@ const defaultForm = {
 };
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [editAgent, setEditAgent] = useState<Agent | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(defaultForm);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [mutError, setMutError] = useState("");
 
-  const fetchData = async () => {
-    setLoading(true);
+  const { data: agents = [], isLoading, error: queryError } = useAgents();
+  const { data: services = [] } = useServices();
+  const createAgent = useCreateAgent();
+  const updateAgent = useUpdateAgent();
+  const toggleAgent = useToggleAgent();
+  const assignServices = useAssignAgentServices();
+
+  const error = (queryError as Error)?.message || mutError;
+
+  const serviceNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    services.forEach((s: Service) => { map[s.id] = s.name; });
+    return map;
+  }, [services]);
+
+  const handleToggle = async (agent: Agent) => {
+    setMutError("");
     try {
-      const [agentsData, servicesData] = await Promise.all([
-        api.get<Agent[]>("/api/agents"),
-        api.get<Service[]>("/api/services"),
-      ]);
-      setAgents(agentsData);
-      setServices(servicesData);
+      await toggleAgent.mutateAsync(agent.id);
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchData(); }, []);
-
-  const toggleAgent = async (agent: Agent) => {
-    try {
-      await api.patch(`/api/agents/${agent.id}/toggle`);
-      setAgents((prev) =>
-        prev.map((a) => (a.id === agent.id ? { ...a, is_active: !a.is_active } : a))
-      );
-    } catch (e: any) {
-      setError(e.message);
+      setMutError(e.message);
     }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    setSaving(true);
+    setMutError("");
     try {
-      const agent = await api.post<Agent>("/api/agents", form);
+      const agent = await createAgent.mutateAsync(form);
       if (selectedServices.length > 0) {
-        await api.post(`/api/agents/${agent.id}/services`, { service_ids: selectedServices });
+        await assignServices.mutateAsync({ id: agent.id, service_ids: selectedServices });
       }
       setShowCreate(false);
       setForm(defaultForm);
       setSelectedServices([]);
-      await fetchData();
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
+      setMutError(e.message);
     }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editAgent) return;
-    setSaving(true);
+    setMutError("");
     try {
-      await api.put(`/api/agents/${editAgent.id}`, form);
-      await api.post(`/api/agents/${editAgent.id}/services`, { service_ids: selectedServices });
+      if (editAgent.id) {
+        await updateAgent.mutateAsync({ id: editAgent.id, data: form });
+        if (selectedServices.length > 0 || editAgent.service_ids.length > 0) {
+          await assignServices.mutateAsync({ id: editAgent.id, service_ids: selectedServices });
+        }
+      }
       setShowEdit(false);
       setEditAgent(null);
-      await fetchData();
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
+      setMutError(e.message);
     }
   };
 
@@ -163,7 +141,7 @@ export default function AgentsPage() {
       {error && (
         <div className="mb-4 flex items-center gap-2 text-xs text-red-400 bg-red-500/5 border border-red-500/20 px-4 py-2.5 rounded-xl">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
-          <button onClick={() => setError("")} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setMutError("")} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
         </div>
       )}
 
@@ -176,8 +154,24 @@ export default function AgentsPage() {
         />
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-emerald-400" /></div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-[#0a1120] border border-slate-800/80 rounded-2xl p-5 animate-pulse">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-slate-800" />
+                  <div>
+                    <div className="h-4 w-24 bg-slate-800 rounded" />
+                    <div className="h-3 w-16 bg-slate-800 rounded mt-1" />
+                  </div>
+                </div>
+              </div>
+              <div className="h-3 w-20 bg-slate-800 rounded mb-3" />
+              <div className="h-8 w-full bg-slate-800 rounded-xl" />
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-slate-500">
           <Bot className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -216,7 +210,7 @@ export default function AgentsPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => toggleAgent(agent)}
+                  onClick={() => handleToggle(agent)}
                   className={`p-1.5 rounded-lg transition-colors ${
                     agent.is_active
                       ? "text-emerald-400 hover:bg-emerald-500/10"
@@ -326,7 +320,7 @@ export default function AgentsPage() {
                     <p className="text-xs text-slate-500 italic">No services available. Create services first.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
-                      {services.map((s) => (
+                      {services.map((s: Service) => (
                         <label key={s.id}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs cursor-pointer transition-colors ${
                             selectedServices.includes(s.id)
@@ -352,9 +346,9 @@ export default function AgentsPage() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-[#070b13] border border-slate-800 hover:border-slate-700 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={saving || !form.name.trim()}
+                <button type="submit" disabled={createAgent.isPending || !form.name.trim()}
                   className="flex-[2] py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md flex items-center justify-center gap-2">
-                  {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : "Create Agent"}
+                  {createAgent.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : "Create Agent"}
                 </button>
               </div>
             </motion.form>
@@ -428,7 +422,7 @@ export default function AgentsPage() {
                     <p className="text-xs text-slate-500 italic">No services available.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
-                      {services.map((s) => (
+                      {services.map((s: Service) => (
                         <label key={s.id}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs cursor-pointer transition-colors ${
                             selectedServices.includes(s.id)
@@ -454,9 +448,9 @@ export default function AgentsPage() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-[#070b13] border border-slate-800 hover:border-slate-700 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={saving}
+                <button type="submit" disabled={updateAgent.isPending}
                   className="flex-[2] py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md flex items-center justify-center gap-2">
-                  {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Save Changes"}
+                  {updateAgent.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Save Changes"}
                 </button>
               </div>
             </motion.form>

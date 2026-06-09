@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -21,8 +21,14 @@ import {
   Package,
   FlaskConical,
   Pill,
+  Receipt,
+  Video,
+  HeartPulse,
   Users,
+  Bell,
+  BellRing,
 } from "lucide-react";
+import { useUnreadCount, useMarkAsRead, useNotifications } from "@/lib/api-hooks";
 
 export default function DashboardLayout({
   children,
@@ -32,6 +38,29 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  const { data: unreadData } = useUnreadCount();
+  const { data: recentNotifications } = useNotifications({ limit: 5 });
+  const markAsRead = useMarkAsRead();
+  const unreadCount = unreadData?.count ?? 0;
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleNotificationClick = (n: { id: string; is_read: boolean; link?: string | null }) => {
+    if (!n.is_read) markAsRead.mutate(n.id);
+    if (n.link) router.push(n.link);
+    setBellOpen(false);
+  };
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -44,8 +73,12 @@ export default function DashboardLayout({
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Lab", href: "/lab", icon: FlaskConical },
     { name: "Pharmacy", href: "/pharmacy", icon: Pill },
+    { name: "Billing", href: "/billing", icon: Receipt },
+    { name: "Telemedicine", href: "/telemedicine", icon: Video },
+    { name: "Emergency", href: "/emergency", icon: HeartPulse },
     { name: "Services", href: "/services", icon: Briefcase },
     { name: "AI Agents", href: "/agents", icon: Bot },
+    { name: "Notifications", href: "/notifications", icon: Bell },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
   ];
 
@@ -201,6 +234,63 @@ export default function DashboardLayout({
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Notification Bell */}
+            <div className="relative" ref={bellRef}>
+              <button
+                onClick={() => setBellOpen(!bellOpen)}
+                className="relative p-2 rounded-xl hover:bg-slate-800/60 transition-colors text-slate-400 hover:text-slate-200"
+              >
+                {unreadCount > 0 ? <BellRing className="w-5 h-5 text-emerald-400" /> : <Bell className="w-5 h-5" />}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4.5 h-4.5 text-[9px] font-bold text-white bg-red-500 rounded-full min-w-[18px] min-h-[18px]">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {bellOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-[#0a1120] border border-slate-700/60 rounded-2xl shadow-xl shadow-black/40 overflow-hidden z-50">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/60">
+                    <span className="text-xs font-semibold text-slate-200">Notifications</span>
+                    {unreadCount > 0 && (
+                      <Link href="/notifications" onClick={() => setBellOpen(false)} className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300">
+                        View all
+                      </Link>
+                    )}
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {!recentNotifications || recentNotifications.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-xs text-slate-500">No notifications yet</div>
+                    ) : (
+                      recentNotifications.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => handleNotificationClick(n)}
+                          className={`w-full text-left px-4 py-3 hover:bg-slate-800/40 transition-colors border-b border-slate-800/40 last:border-b-0 ${!n.is_read ? "bg-emerald-500/5" : ""}`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${n.is_read ? "bg-transparent" : "bg-emerald-400"}`} />
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-xs ${n.is_read ? "text-slate-400" : "text-slate-200 font-medium"}`}>{n.title}</p>
+                              {n.body && <p className="text-[10px] text-slate-500 mt-0.5 truncate">{n.body}</p>}
+                              <p className="text-[9px] text-slate-600 mt-1">{new Date(n.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <Link
+                    href="/notifications"
+                    onClick={() => setBellOpen(false)}
+                    className="block w-full text-center text-xs font-medium text-emerald-400 py-3 bg-slate-900/50 hover:bg-slate-800/60 transition-colors border-t border-slate-800/60"
+                  >
+                    Open Notification Center
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <div className="hidden sm:flex items-center gap-1.5 bg-[#0e172a] border border-slate-800 px-3 py-1.5 rounded-lg">
               <Activity className="w-3.5 h-3.5 text-emerald-400" />
               <span className="text-xs font-semibold text-slate-400">Dhaka Region Call Stream Active</span>

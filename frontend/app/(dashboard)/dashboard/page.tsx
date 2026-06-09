@@ -14,6 +14,7 @@ import {
   User,
   Smartphone,
 } from "lucide-react";
+import { useAnalyticsSummary } from "@/lib/api-hooks";
 
 interface Appointment {
   id: string;
@@ -59,6 +60,8 @@ export default function DashboardPage() {
   const [callTranscript, setCallTranscript] = useState<SimulatedTranscript[]>([]);
   const [callDuration, setCallDuration] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { data: analytics, isLoading, error } = useAnalyticsSummary();
 
   const [appointments] = useState<Appointment[]>([
     { id: "APT001", patientName: "Imran Khan", phone: "01711223344", doctorName: "Dr. Shah Alam (Cardiology)", time: "09:30 AM", status: "Completed", amount: 500 },
@@ -164,11 +167,16 @@ export default function DashboardPage() {
       </motion.div>
 
       <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {error && !isLoading && (
+          <div className="col-span-full bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 text-sm text-red-400">
+            Failed to load analytics data. Please try again later.
+          </div>
+        )}
         {[
-          { label: "Today's Bookings", value: "24", change: "+18% from yesterday", icon: Calendar, color: "emerald" },
-          { label: "Total Calls today", value: "187", change: "+8% peak volume", icon: Phone, color: "teal" },
-          { label: "AI Success Rate", value: "94.2%", change: "91% patient satisfaction", icon: Smile, color: "blue" },
-          { label: "bKash Revenue", value: "৳ 12,000", change: "100% deposit rate", icon: CreditCard, color: "pink" },
+          { label: "Today's Bookings", value: analytics ? String(analytics.total_appointments) : "—", change: "+18% from yesterday", icon: Calendar, color: "emerald" },
+          { label: "Total Calls today", value: analytics ? String(analytics.total_calls) : "—", change: "+8% peak volume", icon: Phone, color: "teal" },
+          { label: "AI Success Rate", value: analytics ? `${analytics.booking_rate_pct.toFixed(1)}%` : "—%", change: "91% patient satisfaction", icon: Smile, color: "blue" },
+          { label: "bKash Revenue", value: analytics ? `৳ ${analytics.total_revenue_bdt.toLocaleString("en-US")}` : "৳ —", change: "100% deposit rate", icon: CreditCard, color: "pink" },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -181,7 +189,13 @@ export default function DashboardPage() {
           >
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">{stat.label}</span>
-              <span className="text-2xl font-bold text-white">{stat.value}</span>
+              <span className="text-2xl font-bold text-white">
+                {isLoading ? (
+                  <span className="inline-block w-20 h-8 rounded bg-slate-800 animate-pulse" />
+                ) : (
+                  stat.value
+                )}
+              </span>
               <div className="flex items-center gap-1 mt-1 text-[10px] text-emerald-400 font-medium">
                 <TrendingUp className="w-3 h-3" />
                 <span>{stat.change}</span>

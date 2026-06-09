@@ -33,6 +33,7 @@ from .lab_integration import (
     LabTest, LabOrder, LabResult, ImagingStudy,
     LabTestCategory, SpecimenType, OrderStatus,
 )
+from .notification import Notification
 from .agent import Agent, Service, AgentService
 
 __all__ = [
@@ -58,4 +59,5 @@ __all__ = [
     "LabTest", "LabOrder", "LabResult", "ImagingStudy",
     "LabTestCategory", "SpecimenType", "OrderStatus",
     "Agent", "Service", "AgentService",
+    "Notification",
 ]

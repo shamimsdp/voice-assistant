@@ -37,7 +37,7 @@ Update this file after every meaningful implementation change.
 - Authentication (OTP request/verify, JWT, user profile)
 
 ### Testing
-- 144 passing backend tests (pytest)
+- 159 passing backend tests (pytest)
 - Test patterns established: model property tests, service logic with AsyncMock, edge case coverage
 
 ### Frontend — Pages
@@ -47,6 +47,19 @@ Update this file after every meaningful implementation change.
 - Appointments (`/appointments`) — Full table with Zod-validated booking modal
 - Call Logs (`/calls`) — Split-panel transcript viewer with sentiment filtering
 - Analytics (`/analytics`) — Recharts BarChart + LineChart, latency cards, sentiment bars
+- Schedule (`/schedule`) — Month calendar with day detail panel, time-off management, 3 modals
+- Patients (`/patients`) — Searchable list, registration modal, detail slideover
+- Patient EHR (`/patients/{id}`) — 8-tab detail page (Summary, Records, Vitals, Diagnoses, Prescriptions, Allergies, Immunizations, Family History)
+- Doctors (`/doctors`) — Card grid with search, active/inactive filter, add/edit modal, toggle
+- Inventory (`/inventory`) — Items table, stock alerts, transactions, supplies, equipment tabs
+- Lab (`/lab`) — 3 tabs: test catalog, orders + results, imaging studies
+- Pharmacy (`/pharmacy`) — Order list, create order, add items, dispense workflow
+- Billing (`/billing`) — 3 tabs: invoices, payments, insurance claims, create invoice/claim
+- Telemedicine (`/telemedicine`) — Session list, schedule modal, status actions
+- Emergency (`/emergency`) — Cases list, triage badges, detail expand, ambulance dispatch
+- Services (`/services`) — Service catalog with CRUD modal, category filter
+- AI Agents (`/agents`) — Agent grid, create/edit modal, activation toggle, service assignment
+- Notifications (`/notifications`) — Full list with type/unread filters, mark read/all read. Bell dropdown in header.
 - Settings (`/settings`) — Clinic config, localization guards, SMS gateway, AI persona, doctor toggles
 
 ### Libraries Integrated
@@ -66,32 +79,11 @@ Update this file after every meaningful implementation change.
 
 ## Next Up
 
-### Phase 1 — High-Value Frontend Pages (backends already built)
-1. **Patients** — ✅ Built: list/search, registration modal, detail slideover
-2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
-3. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
-4. **Pharmacy** — ✅ Built: order list, create order, add items, dispense workflow
-5. **Lab** — ✅ Built: test catalog, orders + results, imaging studies
-6. **Billing** — Invoice list, payment history, insurance claims, financial reports
-
-### Phase 2 — Connect Existing Pages to Real APIs
-7. Dashboard → `GET /api/analytics/summary`
-8. Analytics → `GET /api/analytics/*` and `GET /api/analytics/v2/*`
-9. Appointments → `GET/POST/PATCH/DELETE /api/appointments/*`
-10. Call Logs → `GET /api/calls`, `GET /api/calls/{id}`
-11. Settings → `GET/PATCH /api/clinics/me`, `GET/POST/DELETE /api/clinics/doctors`
-12. Login → `POST /api/auth/request-otp`, `POST /api/auth/verify-otp`
-
-### Phase 3 — Medium Complexity
-13. Emergency — ER cases dashboard, ambulance dispatch
-14. Telemedicine — Session scheduling, video call integration
-15. Doctor Management — Full CRUD page
-16. Staff Scheduling — Calendar view with approval workflows
-17. AI Agents — Dedicated config page (prompts, intents, model selection)
-18. Notifications — In-app notification center with bell icon
-
-### Phase 4 — Advanced / New Builds
+### Remaining
 19. Knowledge Base — Searchable medical FAQ/protocols
+20. Support — Internal ticketing system
+21. Patient Portal — Patient self-service login
+22. Website — Clinic public page config
 20. Support — Internal ticketing system
 21. Patient Portal — Patient self-service login
 22. Website — Clinic public page config

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -18,22 +18,8 @@ import {
   UserCheck,
   ExternalLink,
 } from "lucide-react";
-import { api } from "@/lib/api";
-
-interface Patient {
-  id: string;
-  phone: string;
-  name: string | null;
-  name_bn: string | null;
-  date_of_birth: string | null;
-  gender: string | null;
-  address: string | null;
-  email: string | null;
-  preferred_language: string;
-  is_active: boolean;
-  created_at: string;
-  appointment_count: number;
-}
+import { usePatients, useCreatePatient } from "@/lib/api-hooks";
+import type { Patient } from "@/lib/api-hooks";
 
 const defaultForm = {
   phone: "",
@@ -45,56 +31,56 @@ const defaultForm = {
   address: "",
 };
 
+function Skeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="bg-[#0a1120] border border-slate-800/80 rounded-2xl p-5 animate-pulse">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-slate-800" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-4 w-28 rounded bg-slate-800" />
+              <div className="h-3 w-36 rounded bg-slate-800/60" />
+            </div>
+          </div>
+          <div className="flex gap-4 mb-3">
+            <div className="h-3 w-24 rounded bg-slate-800/60" />
+            <div className="h-3 w-16 rounded bg-slate-800/60" />
+          </div>
+          <div className="pt-3 border-t border-slate-800/40">
+            <div className="h-3 w-32 rounded bg-slate-800/40" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function PatientsPage() {
   const router = useRouter();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(defaultForm);
-  const [saving, setSaving] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  const fetchPatients = async () => {
-    setLoading(true);
-    try {
-      const params = search ? `?search=${encodeURIComponent(search)}` : "";
-      const data = await api.get<Patient[]>(`/api/patients${params}`);
-      setPatients(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+  const { data: patients, isLoading, error } = usePatients(debouncedSearch || undefined);
+  const createPatient = useCreatePatient();
+
+  const formatDate = (d: string | null) => {
+    if (!d) return "\u2014";
+    return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   };
-
-  useEffect(() => { fetchPatients(); }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => { fetchPatients(); }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.phone.trim()) return;
-    setSaving(true);
-    try {
-      await api.post("/api/patients", form);
-      setShowForm(false);
-      setForm(defaultForm);
-      await fetchPatients();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const formatDate = (d: string | null) => {
-    if (!d) return "—";
-    return new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    createPatient.mutate(form, {
+      onSuccess: () => {
+        setShowForm(false);
+        setForm(defaultForm);
+      },
+    });
   };
 
   return (
@@ -114,8 +100,8 @@ export default function PatientsPage() {
 
       {error && (
         <div className="mb-4 flex items-center gap-2 text-xs text-red-400 bg-red-500/5 border border-red-500/20 px-4 py-2.5 rounded-xl">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
-          <button onClick={() => setError("")} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error instanceof Error ? error.message : "Failed to load patients"}
+          <button onClick={() => {}} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
         </div>
       )}
 
@@ -123,14 +109,19 @@ export default function PatientsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
         <input
           type="text" placeholder="Search by name or phone..."
-          value={search} onChange={(e) => setSearch(e.target.value)}
+          value={search} onChange={(e) => {
+            setSearch(e.target.value);
+            const v = e.target.value;
+            clearTimeout((window as any).__searchTimer);
+            (window as any).__searchTimer = setTimeout(() => setDebouncedSearch(v), 300);
+          }}
           className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#0a1120] border border-slate-800 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
         />
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-emerald-400" /></div>
-      ) : patients.length === 0 ? (
+      {isLoading ? (
+        <Skeleton />
+      ) : !patients || patients.length === 0 ? (
         <div className="text-center py-20 text-slate-500">
           <User className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="text-sm font-medium">No patients found</p>
@@ -221,7 +212,7 @@ export default function PatientsPage() {
                     <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block">Name (BN)</label>
                     <input value={form.name_bn} onChange={(e) => setForm({ ...form, name_bn: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-[#070b13] border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-emerald-500/50"
-                      placeholder="রোগীর নাম" />
+                      placeholder="\u09B0\u09CB\u0997\u09C0\u09B0 \u09A8\u09BE\u09AE" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -260,9 +251,9 @@ export default function PatientsPage() {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-[#070b13] border border-slate-800 hover:border-slate-700 transition-colors">Cancel</button>
-                <button type="submit" disabled={saving || !form.phone.trim()}
+                <button type="submit" disabled={createPatient.isPending || !form.phone.trim()}
                   className="flex-[2] py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md flex items-center justify-center gap-2">
-                  {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Register Patient"}
+                  {createPatient.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Register Patient"}
                 </button>
               </div>
             </motion.form>
@@ -311,7 +302,7 @@ export default function PatientsPage() {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-[#070b13] rounded-xl p-3.5 border border-slate-800/60">
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider">Gender</p>
-                    <p className="text-sm font-semibold text-white mt-0.5 capitalize">{selectedPatient.gender || "—"}</p>
+                    <p className="text-sm font-semibold text-white mt-0.5 capitalize">{selectedPatient.gender || "\u2014"}</p>
                   </div>
                   <div className="bg-[#070b13] rounded-xl p-3.5 border border-slate-800/60">
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider">Date of Birth</p>

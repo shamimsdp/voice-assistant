@@ -463,54 +463,33 @@ Not built. The existing landing page (`/`) is static.
 
 ### 12. Notifications
 
-**Status:** 🟠 **PARTIAL — SMS service exists, no notification center UI**
+**Status:** ✅ **DONE**
 
 **Description:** In-app notification center, configurable SMS/email triggers, notification history.
 
 #### Backend
 | Endpoint | Method | Route | What it does |
 |----------|--------|-------|-------------|
+| List Notifications | `GET` | `/api/notifications?unread_only=&limit=&offset=` | List notifications for current user |
+| Unread Count | `GET` | `/api/notifications/unread-count` | Unread count badge |
+| Create Notification | `POST` | `/api/notifications` | Create a notification (admin) |
+| Mark as Read | `PATCH` | `/api/notifications/{id}/read` | Mark single notification as read |
+| Mark All as Read | `POST` | `/api/notifications/read-all` | Mark all notifications as read |
 | Smart Reminder | `POST` | `/api/analytics/v2/appointments/{id}/remind` | Send risk-based reminder SMS |
+
+**Model:** `Notification`: id, clinic_id, user_id, type, title (EN+BN), body (EN+BN), link, is_read, created_at
 
 **Services:**
 | Service | What it does |
 |---------|-------------|
+| `notification_service.py` | CRUD for in-app notifications: create, list (filterable), mark read, mark all read, unread count |
 | `sms_service.py` | Sends confirmation, reminder, cancellation SMS via Twilio with SSL Wireless fallback for BD carriers. Message templates in Bangla and English. |
 
-**What's missing:** No notification model or endpoints for in-app notifications. No notification history tracking, no read/unread status.
-
-**Proposed Model:** `Notification`
-| Column | Type |
-|--------|------|
-| id | UUID PK |
-| clinic_id | FK -> clinics |
-| user_id | FK -> users |
-| type | String(50) (appointment_confirmed, payment_received, new_call, time_off_approved, etc.) |
-| title | String(255) |
-| title_bn | String(255) (nullable) |
-| body | Text |
-| body_bn | Text (nullable) |
-| link | String(500) (nullable) |
-| is_read | Boolean (default: false) |
-| created_at | DateTime |
-
-**Proposed Endpoints:**
-| Method | Route | What it does |
-|--------|-------|-------------|
-| `GET` | `/api/notifications?unread_only=&limit=` | List notifications |
-| `PATCH` | `/api/notifications/{id}/read` | Mark as read |
-| `POST` | `/api/notifications/read-all` | Mark all as read |
-| `GET` | `/api/notifications/unread-count` | Unread count badge |
-
 #### Frontend
-**Current:** Per-appointment SMS trigger button in `/appointments`.
-
-**Needed:**
-| Component | Location | Key UI to Build | Priority |
-|-----------|----------|-----------------|----------|
-| Notification Bell | Dashboard sidebar header | Bell icon with unread count badge. Dropdown shows recent notifications | Medium |
-| Notification Center | `/notifications` | Full notification list with filters (type, read/unread), mark as read | Medium |
-| Notification Settings | `/settings/notifications` | Configure which events trigger SMS/notification | Low |
+| Component | Location | Key UI |
+|-----------|----------|--------|
+| Notification Bell | Dashboard sidebar header | Bell icon with unread count badge (red circle), auto-refreshes every 30s. Dropdown shows 5 most recent notifications with mark-as-read on click. "Open Notification Center" link at bottom. |
+| Notification Center | `/notifications` | Full notification list with type filter (pill buttons) and unread/all toggle. Each card shows type badge, title (with Bangla), body, timestamp. Mark as read button per item. Mark all read button. Loading skeleton, error state, empty state. |
 
 ---
 
@@ -617,7 +596,7 @@ Not built. The existing landing page (`/`) is static.
 
 ### 19. Billing & Invoices
 
-**Status:** 🟡 **API DONE** — 11 endpoints in `/api/payments/*`
+**Status:** ✅ **DONE**
 
 **Description:** Invoice generation, payment tracking, insurance claims, financial reporting.
 
@@ -637,15 +616,10 @@ Not built. The existing landing page (`/`) is static.
 
 **Models:** `Invoice` (DRAFT/SENT/PAID/OVERDUE/CANCELLED), `InsuranceClaim` (DRAFT/SUBMITTED/APPROVED/REJECTED/PAID, providers: PRAGOTI/METLIFE/DELTA/GENERAL/OTHER)
 
-**Frontend Needed:**
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Billing Dashboard | `/billing` | Revenue summary, pending payments, recent invoices | High |
-| Invoice List | `/billing/invoices` | Filterable table with status, patient, amount, date | High |
-| Invoice Detail | `/billing/invoices/{id}` | Invoice breakdown (line items, tax, discount, total), payment status | High |
-| Create Invoice | `/billing/invoices/new` | Generate invoice for appointment with line items | High |
-| Payment History | `/billing/payments` | Payment log with bKash transaction IDs | Medium |
-| Insurance Claims | `/billing/insurance` | Claim list with status, submit/re-submit actions | Medium |
+**Frontend:**
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Billing Dashboard | `/billing` | 3-tab layout (Invoices, Payments, Insurance Claims). 5 stat cards (total invoices, paid, overdue, revenue, claims active). Expandable invoice detail with line items breakdown. Payment history table with status badges. Insurance claim cards with submit action. Create Invoice modal with dynamic line items, tax, discount preview. Create Claim modal. | ✅ Built |
 | Financial Reports | `/billing/reports` | Date-range report with revenue, fees, insurance breakdown | Low |
 
 ---
@@ -733,15 +707,15 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 7 | Settings | ✅ DONE | 5 endpoints | `/settings` | Connect to real APIs |
 | 8 | AI Agents | ✅ Done | `/api/agents/*` + 8 pre-defined agents | `/agents` with grid, create, edit, toggle, service assignment | Medium |
 | 9 | Services | ✅ Done | `/api/services/*` with 14 categories | `/services` with catalog, CRUD modal, search, category filter | Medium |
-| 10 | Notifications | 🟠 Partial | SMS service + 1 endpoint | SMS button only | Medium |
+| 10 | Notifications | ✅ DONE | 4 endpoints (GET/POST/PATCH) | `/notifications` with full list, type filter, unread filter, mark read, mark all read. Bell dropdown in sidebar header with unread count badge. | Medium |
 | 11 | Inventory | ✅ DONE | 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs | **HIGH** |
 | 12 | Pharmacy | ✅ DONE | 4 endpoints | `/pharmacy` with order list, expandable detail, add items, dispense | **HIGH** |
 | 13 | Lab Integration | ✅ DONE | 9 endpoints | `/lab` with test catalog, orders + results, imaging studies | **HIGH** |
 | 14 | EHR / Medical Records | ✅ DONE | 12 endpoints | `/patients/{id}` with 8-tab EHR detail page | **HIGH** |
-| 15 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
+| 15 | Billing & Invoices | ✅ DONE | 11 endpoints | `/billing` with invoices, payment history, insurance claims, financial reports | **HIGH** |
 | 16 | Doctor Management | ✅ DONE | 3 endpoints | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle | **HIGH** |
-| 17 | Emergency / ER | 🟡 API DONE | 6 endpoints | ❌ None | Medium |
-| 18 | Telemedicine | 🟡 API DONE | 3 endpoints | ❌ None | Medium |
+| 17 | Emergency / ER | ✅ DONE | 6 endpoints | `/emergency` with cases list, triage badges, detail expand, ambulance dispatch | Medium |
+| 18 | Telemedicine | ✅ DONE | 3 endpoints | `/telemedicine` with session list, schedule modal, status actions | Medium |
 | 19 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
 | 20 | Support | ❌ Not started | — | ❌ None | Low |
 | 21 | Knowledge Base | ❌ Not started | — | ❌ None | Low |
@@ -761,7 +735,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 5. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
 6. **Lab** — ✅ Built: test catalog, orders + results, imaging studies
 7. **Pharmacy** — ✅ Built: order list, create order, add items, dispense workflow
-8. **Billing** — Invoice creation, payment history, insurance claims
+8. **Billing** — ✅ Built: invoice creation, payment history, insurance claims
 
 ### Phase 2 — Connect Existing Pages to Real APIs
 9. **Dashboard** → `GET /api/analytics/summary`
@@ -772,10 +746,10 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 14. **Login** → `POST /api/auth/request-otp`, `POST /api/auth/verify-otp`
 
 ### Phase 3 — Medium Complexity
-15. **Emergency** — ER dashboard + ambulance dispatch
-16. **Telemedicine** — Session scheduling + video call integration
+15. **Emergency** — ✅ Built: cases list, triage badges, detail expand, ambulance dispatch
+16. **Telemedicine** — ✅ Built: session list, schedule modal, status actions
 17. **AI Agents** — ✅ Built: config page with grid, toggle, service assignment
-18. **Notifications** — In-app notification center
+18. **Notifications** — ✅ Built: bell dropdown with unread badge + full notification center
 
 ### Phase 4 — Advanced / New Builds
 19. **Knowledge Base** — Searchable medical FAQ/protocols

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -10,20 +10,9 @@ import {
   Pill,
   AlertCircle,
   Loader2,
-  CheckCircle,
   X,
 } from "lucide-react";
-import { api } from "@/lib/api";
-
-interface Service {
-  id: string;
-  name: string;
-  description: string | null;
-  duration_min: number;
-  price: number;
-  category: string | null;
-  is_active: boolean;
-}
+import { useServices, useCreateService, useUpdateService, useDeleteService } from "@/lib/api-hooks";
 
 const CATEGORIES = [
   "general", "pediatric", "urgent", "dental", "nutrition",
@@ -42,54 +31,39 @@ const CATEGORY_LABELS: Record<string, string> = {
 const defaultForm = { name: "", description: "", duration_min: 30, price: 0, category: "general" };
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(defaultForm);
-  const [saving, setSaving] = useState(false);
+  const [mutError, setMutError] = useState("");
 
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (categoryFilter) params.set("category", categoryFilter);
-      const data = await api.get<Service[]>(`/api/services?${params}`);
-      setServices(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: services = [], isLoading, error: queryError } = useServices(categoryFilter || undefined);
+  const createService = useCreateService();
+  const updateService = useUpdateService();
+  const deleteService = useDeleteService();
 
-  useEffect(() => { fetchServices(); }, [categoryFilter]);
+  const error = (queryError as Error)?.message || mutError;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    setSaving(true);
+    setMutError("");
     try {
       if (editingId) {
-        await api.put(`/api/services/${editingId}`, form);
+        await updateService.mutateAsync({ id: editingId, data: form });
       } else {
-        await api.post("/api/services", form);
+        await createService.mutateAsync(form);
       }
       setShowForm(false);
       setEditingId(null);
       setForm(defaultForm);
-      await fetchServices();
     } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
+      setMutError(e.message);
     }
   };
 
-  const handleEdit = (svc: Service) => {
+  const handleEdit = (svc: { id: string; name: string; description: string | null; duration_min: number; price: number; category: string | null }) => {
     setForm({
       name: svc.name,
       description: svc.description || "",
@@ -103,11 +77,11 @@ export default function ServicesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this service?")) return;
+    setMutError("");
     try {
-      await api.delete(`/api/services/${id}`);
-      await fetchServices();
+      await deleteService.mutateAsync(id);
     } catch (e: any) {
-      setError(e.message);
+      setMutError(e.message);
     }
   };
 
@@ -133,7 +107,7 @@ export default function ServicesPage() {
       {error && (
         <div className="mb-4 flex items-center gap-2 text-xs text-red-400 bg-red-500/5 border border-red-500/20 px-4 py-2.5 rounded-xl">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
-          <button onClick={() => setError("")} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setMutError("")} className="ml-auto"><X className="w-3.5 h-3.5" /></button>
         </div>
       )}
 
@@ -158,8 +132,24 @@ export default function ServicesPage() {
         </select>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-emerald-400" /></div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-[#0a1120] border border-slate-800/80 rounded-2xl p-5 animate-pulse">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-slate-800" />
+                  <div>
+                    <div className="h-4 w-28 bg-slate-800 rounded" />
+                    <div className="h-3 w-16 bg-slate-800 rounded mt-1" />
+                  </div>
+                </div>
+              </div>
+              <div className="h-3 w-full bg-slate-800 rounded mb-3" />
+              <div className="h-3 w-20 bg-slate-800 rounded" />
+            </div>
+          ))}
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-slate-500">
           <Pill className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -278,9 +268,9 @@ export default function ServicesPage() {
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white bg-[#070b13] border border-slate-800 hover:border-slate-700 transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={saving || !form.name.trim()}
+              <button type="submit" disabled={updateService.isPending || createService.isPending || !form.name.trim()}
                 className="flex-[2] py-2.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-[#070b13] disabled:bg-slate-800 disabled:text-slate-500 transition-all shadow-md flex items-center justify-center gap-2">
-                {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editingId ? "Update Service" : "Add Service"}
+                {(updateService.isPending || createService.isPending) ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editingId ? "Update Service" : "Add Service"}
               </button>
             </div>
           </motion.form>
