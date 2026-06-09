@@ -24,6 +24,10 @@ class Patient(Base):
     # Preferred language detected from calls
     preferred_language: Mapped[str] = mapped_column(String(10), default="bn-BD")
 
+    # Patient portal auth
+    otp_hash: Mapped[str] = mapped_column(String(255), nullable=True)
+    otp_expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

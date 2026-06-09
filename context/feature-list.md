@@ -682,10 +682,10 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 17 | Emergency / ER | ✅ DONE | 6 endpoints | `/emergency` with cases list, triage badges, detail expand, ambulance dispatch | Medium |
 | 18 | Telemedicine | ✅ DONE | 3 endpoints | `/telemedicine` with session list, schedule modal, status actions | Medium |
 | 19 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
-| 20 | Support | ❌ Not started | — | ❌ None | Low |
+| 20 | Support | ✅ DONE | `POST/GET/PATCH /api/support/tickets` + comments | `/support` split-panel with list, detail, comments, create modal, status actions | Low |
 | 21 | Knowledge Base | ✅ DONE | 6 endpoints | `/knowledge` with search, category filter, create/edit/delete, bilingual, tags | Low |
-| 22 | Website Builder | ❌ Not started | — | ❌ None | Low |
-| 23 | Patient Portal | ❌ Not started | — | ❌ None | Low |
+| 22 | Website Builder | ✅ DONE | 3 endpoints | `/website` form-based editor + `/clinic/{id}` public page | Low |
+| 23 | Patient Portal | ✅ DONE | 5 endpoints (auth + data) | `/patient/login` + `/patient/portal` with appointments & invoices | Low |
 | 24 | Auth / Login | ✅ DONE | 3 endpoints | `/login` | Connect to real APIs |
 
 ---
@@ -719,5 +719,5 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 ### Phase 4 — Advanced / New Builds
 19. **Knowledge Base** — ✅ Built: article management with bilingual content, categories, tags, search
 20. **Support** — ✅ Built: ticketing system with status workflow, comments, create modal
-21. **Patient Portal** — Patient self-service
+21. **Patient Portal** — ✅ Built: patient auth + portal pages with appointments & invoices
 22. **Website Builder** — ✅ Built: form-based editor + public clinic page

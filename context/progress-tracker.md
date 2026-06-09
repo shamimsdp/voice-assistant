@@ -64,6 +64,7 @@ Update this file after every meaningful implementation change.
 - **Website** — ✅ Built: 5-section form-based builder (Hero, About, Contact, Hours, Visibility), public clinic page at `/clinic/{id}` with white theme
 - **Knowledge** — ✅ Built: searchable articles with categories, tags, bilingual content, edit/delete
 - **Support** — ✅ Built: ticketing system with comments, status workflow, create modal
+- **Website** — ✅ Built: 5-section form-based builder (Hero, About, Contact, Hours, Visibility), public clinic page at `/clinic/{id}` with white theme
 - Settings (`/settings`) — Clinic config, localization guards, SMS gateway, AI persona, doctor toggles
 
 ### Libraries Integrated
@@ -84,7 +85,7 @@ Update this file after every meaningful implementation change.
 ## Next Up
 
 ### Remaining
-14. Patient Portal — Patient self-service login
+None! All features are built.
 
 ## Open Questions
 
@@ -109,4 +110,4 @@ Update this file after every meaningful implementation change.
 - 2026-06-08: Installed frontend libraries (zustand, TanStack Query, recharts, react-hook-form + zod, framer-motion)
 - 2026-06-08: Integrated recharts into analytics page, Zod validation into appointments form, framer-motion into all pages
 - 2026-06-09: Built Notifications Center (model, service, router, bell dropdown, full page). Built Website Builder (5-section form editor + public clinic page with white theme). Both with zero TS errors and 159 tests passing.
-- 2026-06-08: Created feature-builder subagent, project context folder with 6 files, and skills
+- 2026-06-09: Built Support Ticketing (2 models, 5 endpoints, split-panel page with comments/status workflow), Knowledge Base (model, 6 endpoints, split-panel with bilingual search/edit), Patient Portal (auth + data endpoints, login + portal pages). All features complete. Zero TS errors, 159 tests passing.

@@ -1117,3 +1117,64 @@ export function useDeleteKnowledgeArticle() {
   const qc = useQueryClient();
   return useMutation<any, Error, string>({ mutationFn: (id) => api.delete(`/api/knowledge/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge"] }) });
 }
+
+// ─── Patient Portal Hooks ───────────────────────────────────────────────────
+
+export interface PatientAppointment {
+  id: string;
+  appointment_date: string | null;
+  appointment_time: string | null;
+  status: string;
+  payment_status: string;
+  fee: number | null;
+  doctor_name: string | null;
+  doctor_specialty: string | null;
+  created_at: string;
+}
+
+export interface PatientInvoice {
+  id: string;
+  invoice_number: string;
+  status: string;
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  issued_at: string | null;
+  due_at: string | null;
+}
+
+const patientApi = {
+  get: async <T = any>(path: string, token: string): Promise<T> => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${path}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+  post: async <T = any>(path: string, body?: unknown): Promise<T> => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};
+
+export function usePatientAppointments(token: string | null) {
+  return useQuery<PatientAppointment[]>({
+    queryKey: ["patient-portal", "appointments", token],
+    queryFn: () => patientApi.get("/api/patient-portal/appointments", token!),
+    enabled: !!token,
+  });
+}
+
+export function usePatientInvoices(token: string | null) {
+  return useQuery<PatientInvoice[]>({
+    queryKey: ["patient-portal", "invoices", token],
+    queryFn: () => patientApi.get("/api/patient-portal/invoices", token!),
+    enabled: !!token,
+  });
+}

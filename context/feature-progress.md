@@ -66,7 +66,6 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| **Patient Portal** | Medium | Patient self-service login (view appointments, pay bills, chat with AI) |
 | **Role-Based Access Control (UI)** | Medium | Admin/Receptionist/Doctor views differ; backend has `UserRole` enum but frontend ignores it |
 | **Reports / Export** | Low | CSV/PDF export for appointments, payments, analytics |
 | **Audit Log** | Low | Track who changed what in the system |
@@ -117,7 +116,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 12. **Knowledge** — ✅ Built: searchable articles, categories, tags, bilingual
 13. **Website** — ✅ Built: form-based builder + public page at `/clinic/{id}`
 14. **Support** — ✅ Built: ticketing system with comments, status workflow, create modal
-15. **Patient Portal** — Patient self-service login
+15. **Patient Portal** — ✅ Built: patient auth + portal pages with appointments & invoices
 
 ---
 
