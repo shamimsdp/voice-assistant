@@ -564,33 +564,27 @@ Not built. The existing landing page (`/`) is static.
 
 ### 15. Pharmacy / Dispensary
 
-**Status:** 🟡 **API DONE** — 4 endpoints in `/api/pharmacy/*`
+**Status:** ✅ **DONE**
 
 **Description:** Pharmacy order management — create orders for patients, add items, mark as dispensed.
 
-**Frontend Needed:**
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Pharmacy Orders | `/pharmacy` | Searchable order list with status (pending/dispensed/partially/cancelled), patient name, total amount | High |
-| New Pharmacy Order | `/pharmacy/new` | Select patient, search/add medicines from inventory, set quantities, pricing | High |
-| Order Detail | `/pharmacy/{id}` | Order items list, dispense button, delivery status tracking | High |
+**Frontend:**
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Pharmacy Dashboard | `/pharmacy` | 4 stat cards (total orders, pending, dispensed, revenue). Search + status filter. Expandable order cards with items table (medicine, dosage, qty, price, dispensed status), Add Item button, Dispense All button, Cancel button. Create Order modal (patient, doctor, delivery address, fee, notes). Add Item modal (medicine name, dosage, quantity, unit price, auto-calculated total). | ✅ Built |
 
 ---
 
 ### 16. Lab Integration
 
-**Status:** 🟡 **API DONE** — 9 endpoints in `/api/lab/*`
+**Status:** ✅ **DONE**
 
 **Description:** Lab test ordering, result entry, imaging study management.
 
-**Frontend Needed:**
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Lab Orders | `/lab` | List orders with status (ordered/collected/in-progress/completed/abnormal), patient, tests | High |
-| New Lab Order | `/lab/orders/new` | Select patient, select tests from catalog, set priority, clinical notes | High |
-| Lab Order Detail | `/lab/orders/{id}` | Test results table with reference ranges, abnormal flagging, verification | High |
-| Lab Test Catalog | `/lab/tests` | Manage test catalog (name, category, fee, turnaround, instructions) | Medium |
-| Imaging Studies | `/lab/imaging` | List studies with status, view findings/impression | Medium |
+**Frontend:**
+| Page | Route | Key UI | Status |
+|------|-------|--------|--------|
+| Lab & Diagnostics | `/lab` | 3-tab layout: Test Catalog (search, category filter, price/turnaround cards), Orders (expandable list with results table, abnormal flagging), Imaging (card grid with status badges). Place Order modal with test selection. | ✅ Built |
 
 ---
 
@@ -741,8 +735,8 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 9 | Services | ✅ Done | `/api/services/*` with 14 categories | `/services` with catalog, CRUD modal, search, category filter | Medium |
 | 10 | Notifications | 🟠 Partial | SMS service + 1 endpoint | SMS button only | Medium |
 | 11 | Inventory | ✅ DONE | 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs | **HIGH** |
-| 12 | Pharmacy | 🟡 API DONE | 4 endpoints | ❌ None | **HIGH** |
-| 13 | Lab Integration | 🟡 API DONE | 9 endpoints | ❌ None | **HIGH** |
+| 12 | Pharmacy | ✅ DONE | 4 endpoints | `/pharmacy` with order list, expandable detail, add items, dispense | **HIGH** |
+| 13 | Lab Integration | ✅ DONE | 9 endpoints | `/lab` with test catalog, orders + results, imaging studies | **HIGH** |
 | 14 | EHR / Medical Records | ✅ DONE | 12 endpoints | `/patients/{id}` with 8-tab EHR detail page | **HIGH** |
 | 15 | Billing & Invoices | 🟡 API DONE | 11 endpoints | ❌ None | **HIGH** |
 | 16 | Doctor Management | ✅ DONE | 3 endpoints | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle | **HIGH** |
@@ -765,8 +759,8 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
 4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
 5. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
-6. **Pharmacy** — Order creation and management
-7. **Lab** — Test catalog, order lab tests, view results
+6. **Lab** — ✅ Built: test catalog, orders + results, imaging studies
+7. **Pharmacy** — ✅ Built: order list, create order, add items, dispense workflow
 8. **Billing** — Invoice creation, payment history, insurance claims
 
 ### Phase 2 — Connect Existing Pages to Real APIs

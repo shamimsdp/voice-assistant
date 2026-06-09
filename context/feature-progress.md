@@ -49,8 +49,8 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 | Module | API Prefix | Endpoints | What Frontend Needs |
 |--------|-----------|-----------|---------------------|
 | **EHR / Medical Records** | ✅ DONE | `/api/ehr/*` — 12 endpoints | `/patients/{id}` with 8-tab detail page (Summary, Records, Vitals, Diagnoses, Prescriptions, Allergies, Immunizations, Family History) |
-| **Pharmacy / Dispensary** | `/api/pharmacy/*` | 4 endpoints — order creation, listing, items, dispense | Pharmacy order management page |
-| **Lab Integration** | `/api/lab/*` | 9 endpoints — test catalog, orders, results, imaging | Lab ordering + results viewing page |
+| **Pharmacy / Dispensary** | ✅ DONE | `/api/pharmacy/*` — 4 endpoints | `/pharmacy` with order list, create order, add items, dispense |
+| **Lab Integration** | ✅ DONE | `/api/lab/*` — 9 endpoints | `/lab` with test catalog, orders + results, imaging studies |
 | **Emergency & Triage** | `/api/emergency/*` | 6 endpoints — cases, ambulance dispatch | Emergency dashboard + case detail page |
 | **Telemedicine** | `/api/telemedicine/*` | 3 endpoints — sessions, listing, status | Telemedicine scheduling + video call join page |
 | **Inventory** | ✅ DONE | `/api/inventory/*` — 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs |
@@ -86,8 +86,8 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
 3. **Doctors** — ✅ Built: card grid, search, add/edit modal, active/inactive toggle
 4. **EHR / Medical Records** — ✅ Built: `/patients/{id}` with 8-tab detail page
-5. **Pharmacy** — Order list, create/manage pharmacy orders
-6. **Lab** — Test catalog, order lab tests, view results
+5. **Pharmacy** — ✅ Built: order list, create order, add items, dispense workflow
+6. **Lab** — ✅ Built: test catalog, orders + results, imaging studies
 7. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
 
 ### Phase 2 — Medium Complexity

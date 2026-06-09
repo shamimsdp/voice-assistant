@@ -67,11 +67,11 @@ Update this file after every meaningful implementation change.
 ## Next Up
 
 ### Phase 1 — High-Value Frontend Pages (backends already built)
-1. **Patients** — List/search, registration form, detail page with EHR tabs (records, vitals, diagnoses, prescriptions, allergies, immunizations)
-2. **Schedule** — Weekly doctor schedule view, availability checker, time-off request/approve forms
-3. **Inventory** — Items list, stock transactions, supplies, equipment with alert-level indicators
-4. **Pharmacy** — Order management, add items, dispense workflow
-5. **Lab** — Test catalog, order lab tests, view results with reference ranges
+1. **Patients** — ✅ Built: list/search, registration modal, detail slideover
+2. **Schedule** — ✅ Built: month calendar, day detail, time-off tab, 3 modals
+3. **Inventory** — ✅ Built: items table, stock alerts, transactions, supplies, equipment tabs
+4. **Pharmacy** — ✅ Built: order list, create order, add items, dispense workflow
+5. **Lab** — ✅ Built: test catalog, orders + results, imaging studies
 6. **Billing** — Invoice list, payment history, insurance claims, financial reports
 
 ### Phase 2 — Connect Existing Pages to Real APIs

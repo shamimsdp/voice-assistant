@@ -19,6 +19,8 @@ import {
   Bot,
   Briefcase,
   Package,
+  FlaskConical,
+  Pill,
   Users,
 } from "lucide-react";
 
@@ -40,6 +42,8 @@ export default function DashboardLayout({
     { name: "Patients", href: "/patients", icon: Users },
     { name: "Doctors", href: "/doctors", icon: Stethoscope },
     { name: "Inventory", href: "/inventory", icon: Package },
+    { name: "Lab", href: "/lab", icon: FlaskConical },
+    { name: "Pharmacy", href: "/pharmacy", icon: Pill },
     { name: "Services", href: "/services", icon: Briefcase },
     { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
