@@ -25,7 +25,7 @@ class Base(DeclarativeBase):
 
 async def init_db():
     """Create all tables on startup (dev mode). Use Alembic in production."""
-    from models import clinic, doctor, patient, appointment, call_log, advanced_appointments, payment, clinic_operations, staff_scheduling, lab_integration, ehr, telemedicine, pharmacy, emergency, notification, website, support, agent  # noqa: F401
+    from models import clinic, doctor, patient, appointment, call_log, advanced_appointments, payment, clinic_operations, staff_scheduling, lab_integration, ehr, telemedicine, pharmacy, emergency, notification, website, support, knowledge, agent  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

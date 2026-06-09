@@ -15,6 +15,7 @@ from routers import calls, appointments, clinics, payments, auth, webhooks, anal
 from routers.notifications import router as notifications_router
 from routers.website import router as website_router
 from routers.support import router as support_router
+from routers.knowledge import router as knowledge_router
 from routers.advanced_appointments import router as advanced_appointments_router
 from routers.analytics_v2 import router as analytics_v2_router
 from routers.inventory import router as inventory_router
@@ -100,6 +101,7 @@ app.include_router(patients_router, prefix="/api/patients", tags=["Patients"])
 app.include_router(notifications_router, prefix="/api", tags=["Notifications"])
 app.include_router(website_router, prefix="/api", tags=["Website"])
 app.include_router(support_router, prefix="/api", tags=["Support"])
+app.include_router(knowledge_router, prefix="/api", tags=["Knowledge"])
 
 
 @app.get("/", tags=["Health"])

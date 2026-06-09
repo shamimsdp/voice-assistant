@@ -28,6 +28,7 @@ import {
   Users,
   Bell,
   BellRing,
+  BookOpen,
   LifeBuoy,
 } from "lucide-react";
 import { useUnreadCount, useMarkAsRead, useNotifications } from "@/lib/api-hooks";
@@ -82,6 +83,7 @@ export default function DashboardLayout({
     { name: "AI Agents", href: "/agents", icon: Bot },
     { name: "Notifications", href: "/notifications", icon: Bell },
     { name: "Website", href: "/website", icon: Globe },
+    { name: "Knowledge", href: "/knowledge", icon: BookOpen },
     { name: "Support", href: "/support", icon: LifeBuoy },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
   ];

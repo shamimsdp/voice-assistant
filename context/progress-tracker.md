@@ -62,6 +62,8 @@ Update this file after every meaningful implementation change.
 - Notifications (`/notifications`) — Full list with type/unread filters, mark read/all read. Bell dropdown in header.
 - **Notifications** — ✅ Built: bell dropdown with unread count badge, auto-refresh 30s, full Notification Center page with type/unread filters, mark read/all read
 - **Website** — ✅ Built: 5-section form-based builder (Hero, About, Contact, Hours, Visibility), public clinic page at `/clinic/{id}` with white theme
+- **Knowledge** — ✅ Built: searchable articles with categories, tags, bilingual content, edit/delete
+- **Support** — ✅ Built: ticketing system with comments, status workflow, create modal
 - Settings (`/settings`) — Clinic config, localization guards, SMS gateway, AI persona, doctor toggles
 
 ### Libraries Integrated
@@ -82,8 +84,7 @@ Update this file after every meaningful implementation change.
 ## Next Up
 
 ### Remaining
-19. Knowledge Base — Searchable medical FAQ/protocols
-20. Patient Portal — Patient self-service login
+14. Patient Portal — Patient self-service login
 
 ## Open Questions
 

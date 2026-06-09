@@ -374,40 +374,26 @@ No individual service config pages needed unless expanding beyond what APIs prov
 
 ### 10. Knowledge
 
-**Status:** ❌ **NOT STARTED**
+**Status:** ✅ **DONE**
 
 **Description:** Medical knowledge base, FAQ management, clinic protocol documents — feeds into AI agent responses for accurate information.
 
 #### Backend
-Not built. No models, services, or endpoints exist.
+| Endpoint | Method | Route | What it does |
+|----------|--------|-------|-------------|
+| List Categories | `GET` | `/api/knowledge/categories` | Get all distinct categories |
+| Create Article | `POST` | `/api/knowledge` | Create article |
+| List Articles | `GET` | `/api/knowledge?category=&q=` | Search/filter articles |
+| Article Detail | `GET` | `/api/knowledge/{id}` | Get article |
+| Update Article | `PATCH` | `/api/knowledge/{id}` | Update article |
+| Delete Article | `DELETE` | `/api/knowledge/{id}` | Delete article |
 
-**Proposed Model:** `KnowledgeBase`
-| Column | Type |
-|--------|------|
-| id | UUID PK |
-| clinic_id | FK -> clinics (nullable if global) |
-| title | String(255) |
-| title_bn | String(255) (nullable) |
-| content | Text |
-| content_bn | Text (nullable) |
-| category | String(100) |
-| tags | JSON |
-| is_public | Boolean (default: false) |
-| is_active | Boolean (default: true) |
-
-**Proposed Endpoints:**
-| Method | Route | What it does |
-|--------|-------|-------------|
-| `GET` | `/api/knowledge?category=&q=` | Search knowledge base |
-| `POST` | `/api/knowledge` | Create article |
-| `GET` | `/api/knowledge/{id}` | Get article |
-| `PATCH` | `/api/knowledge/{id}` | Update article |
-| `DELETE` | `/api/knowledge/{id}` | Delete article |
+**Model:** `KnowledgeArticle`: id, clinic_id, title (EN+BN), content (EN+BN), category, tags (JSON), is_public, is_active
 
 #### Frontend
-| Page | Route | Key UI to Build | Priority |
-|------|-------|-----------------|----------|
-| Knowledge Base | `/knowledge` | Searchable article list with categories. Rich text editor for content. | Low |
+| Page | Route | Key UI |
+|------|-------|--------|
+| Knowledge Base | `/knowledge` | Split-panel: searchable article list with category filter, detail panel with rich content display, edit/delete actions. Create Article modal with bilingual fields, category, public toggle, tags. Inline edit drawer.
 
 ---
 
@@ -697,7 +683,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 | 18 | Telemedicine | ✅ DONE | 3 endpoints | `/telemedicine` with session list, schedule modal, status actions | Medium |
 | 19 | Staff Scheduling | 🟡 API DONE | 7 endpoints | ❌ None | Medium |
 | 20 | Support | ❌ Not started | — | ❌ None | Low |
-| 21 | Knowledge Base | ❌ Not started | — | ❌ None | Low |
+| 21 | Knowledge Base | ✅ DONE | 6 endpoints | `/knowledge` with search, category filter, create/edit/delete, bilingual, tags | Low |
 | 22 | Website Builder | ❌ Not started | — | ❌ None | Low |
 | 23 | Patient Portal | ❌ Not started | — | ❌ None | Low |
 | 24 | Auth / Login | ✅ DONE | 3 endpoints | `/login` | Connect to real APIs |
@@ -731,7 +717,7 @@ The dashboard has a live call simulator that mimics the voice agent conversation
 18. **Notifications** — ✅ Built: bell dropdown with unread badge + full notification center
 
 ### Phase 4 — Advanced / New Builds
-19. **Knowledge Base** — Searchable medical FAQ/protocols
+19. **Knowledge Base** — ✅ Built: article management with bilingual content, categories, tags, search
 20. **Support** — ✅ Built: ticketing system with status workflow, comments, create modal
 21. **Patient Portal** — Patient self-service
 22. **Website Builder** — ✅ Built: form-based editor + public clinic page

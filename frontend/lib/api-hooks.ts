@@ -1071,3 +1071,49 @@ export function useAddTicketComment() {
   const qc = useQueryClient();
   return useMutation<any, Error, { id: string; body: string }>({ mutationFn: ({ id, body }) => api.post(`/api/support/tickets/${id}/comments`, { body }), onSuccess: () => qc.invalidateQueries({ queryKey: ["support", "tickets"] }) });
 }
+
+// ─── Knowledge Base Hooks ───────────────────────────────────────────────────
+
+export interface KnowledgeArticle {
+  id: string;
+  title: string;
+  title_bn: string | null;
+  content: string;
+  content_bn: string | null;
+  category: string | null;
+  tags: string[] | null;
+  is_public: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useKnowledgeArticles(params?: { category?: string; q?: string }) {
+  const qs = new URLSearchParams();
+  if (params?.category) qs.set("category", params.category);
+  if (params?.q) qs.set("q", params.q);
+  return useQuery<KnowledgeArticle[]>({ queryKey: ["knowledge", params], queryFn: () => api.get(`/api/knowledge?${qs}`) });
+}
+
+export function useKnowledgeCategories() {
+  return useQuery<string[]>({ queryKey: ["knowledge", "categories"], queryFn: () => api.get("/api/knowledge/categories") });
+}
+
+export function useKnowledgeArticle(id: string) {
+  return useQuery<KnowledgeArticle>({ queryKey: ["knowledge", id], queryFn: () => api.get(`/api/knowledge/${id}`), enabled: !!id });
+}
+
+export function useCreateKnowledgeArticle() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, any>({ mutationFn: (data) => api.post("/api/knowledge", data), onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge"] }) });
+}
+
+export function useUpdateKnowledgeArticle() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, { id: string; data: any }>({ mutationFn: ({ id, data }) => api.patch(`/api/knowledge/${id}`, data), onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge"] }) });
+}
+
+export function useDeleteKnowledgeArticle() {
+  const qc = useQueryClient();
+  return useMutation<any, Error, string>({ mutationFn: (id) => api.delete(`/api/knowledge/${id}`), onSuccess: () => qc.invalidateQueries({ queryKey: ["knowledge"] }) });
+}
