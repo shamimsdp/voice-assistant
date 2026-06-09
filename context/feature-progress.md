@@ -37,7 +37,7 @@
 
 | Feature | Status | Backend | Frontend | Notes |
 |---------|--------|---------|----------|-------|
-| **Notifications** | ✅ DONE | `notification_service.py` — CRUD + `sms_service.py` — Twilio/SSL Wireless; `PATCH /api/notifications/{id}/read`, `POST /api/notifications/read-all`, `GET /api/notifications/unread-count`, `GET /api/notifications`, `POST /api/notifications` | `/notifications` with full list, type filter, unread filter, mark read, mark all read. Bell dropdown with unread count badge, auto-refresh 30s. Loading/error/empty states. | Need a notification center: in-app toast/notification center, configurable SMS/email triggers, notification history |
+| **Notifications** | ✅ DONE | `notification_service.py` — CRUD + `sms_service.py` — Twilio/SSL Wireless; `PATCH /api/notifications/{id}/read`, `POST /api/notifications/read-all`, `GET /api/notifications/unread-count`, `GET /api/notifications`, `POST /api/notifications` | `/notifications` with full list, type filter, unread filter, mark read, mark all read. Bell dropdown with unread count badge, auto-refresh 30s. Loading/error/empty states. |
 | **Settings** | ✅ DONE | `GET/PATCH /api/clinics/me`, `GET/POST /api/clinics/doctors` | `/settings` | Clinic info, localization guards, SMS gateway, voice persona, doctor toggles |
 
 ---
@@ -54,11 +54,10 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 | **Emergency & Triage** | ✅ DONE | `/api/emergency/*` — 6 endpoints | `/emergency` with cases list, triage badges, detail expand, ambulance dispatch |
 | **Telemedicine** | ✅ DONE | `/api/telemedicine/*` — 3 endpoints | `/telemedicine` with session list, schedule modal, status actions |
 | **Inventory** | ✅ DONE | `/api/inventory/*` — 9 endpoints | `/inventory` with items table, stock alerts, transactions, supplies, equipment tabs |
-| **Staff Scheduling** | `/api/staff-scheduling/*` | 7 endpoints — weekly schedules, availability, time-off, overrides | Doctor schedule view + time-off request page |
 | **Invoice / Billing** | ✅ DONE | `GET /api/payments/*` — 11 endpoints | `/billing` with invoices, payment history, insurance claims, financial report |
-| **Advanced Appointments** | `/api/advanced-appointments/*` | 18 endpoints — symptom matching, conflict detection, waiting list, recurring, group bookings, questionnaires | Waiting list management, recurring templates, group booking, pre-visit questionnaires |
-| **Analytics v2** | `/api/analytics/v2/*` | 8 endpoints — full KPIs, demographics, trends, predictive staffing, outbreak detection, no-show risk, NPS | Extended analytics dashboard with predictive insights |
 | **Doctor Management** | ✅ DONE | `GET/POST/DELETE /api/clinics/doctors` | `/doctors` with card grid, search, active/inactive filter, add/edit modal, toggle |
+
+### ✅ All features above now have frontend pages built and connected to real APIs.
 
 ---
 
@@ -74,7 +73,6 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 | **Referral Management** | Low | Inter-doctor or inter-clinic referrals |
 | **Ward / Bed Management** | Low | Inpatient management |
 | **HL7 / FHIR** | Low | Healthcare interoperability standards |
-| **Knowledge Base UI** | Low | Manage FAQs, protocols that the AI agent can reference |
 
 ---
 
@@ -110,7 +108,7 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 9. **Emergency** — ✅ Built: cases list, triage badges, detail expand, ambulance dispatch
 10. **Telemedicine** — ✅ Built: session list, schedule modal, status actions
 11. **AI Agents** — ✅ Built: grid, create/edit, toggle, service assignment
-12. **Notifications** — In-app notification center, configurable triggers
+12. **Notifications** — ✅ Built: bell dropdown with unread count badge + full Notification Center page
 
 ### Phase 3 — Advanced
 12. **Knowledge** — ✅ Built: searchable articles, categories, tags, bilingual
@@ -124,8 +122,8 @@ These are fully functional backend APIs that have **no frontend pages yet**.
 
 **Backend**: 50+ API endpoints across 15 router groups. Full coverage: auth, calls, appointments (basic + advanced), clinics, payments, analytics (v1 + v2), EHR, pharmacy, emergency, telemedicine, lab integration, staff scheduling, inventory, webhooks/streaming.
 
-**Frontend**: 16 pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Schedule (`/schedule`), Call Logs (`/calls`), Analytics (`/analytics`), Patients (`/patients`), Patient EHR (`/patients/{id}`), Doctors (`/doctors`), Inventory (`/inventory`), Lab (`/lab`), Pharmacy (`/pharmacy`), Billing (`/billing`), Services (`/services`), AI Agents (`/agents`), Settings (`/settings`). All pages connected to real backend APIs. Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
+**Frontend**: 20+ pages — Landing (`/`), Login (`/login`), Dashboard (`/dashboard`), Appointments (`/appointments`), Schedule (`/schedule`), Call Logs (`/calls`), Analytics (`/analytics`), Patients (`/patients`), Patient EHR (`/patients/{id}`), Doctors (`/doctors`), Inventory (`/inventory`), Lab (`/lab`), Pharmacy (`/pharmacy`), Billing (`/billing`), Telemedicine (`/telemedicine`), Emergency (`/emergency`), Services (`/services`), AI Agents (`/agents`), Notifications (`/notifications`), Support (`/support`), Knowledge (`/knowledge`), Website (`/website`), Patient Portal (`/patient/*`), Settings (`/settings`). All pages connected to real backend APIs. Libraries: Next.js 16, React 19, Tailwind v4, Recharts, react-hook-form + zod, framer-motion, zustand, tanstack/react-query.
 
-**Testing**: 144 passing backend tests (Python/pytest).
+**Testing**: 159 passing backend tests (Python/pytest).
 
-**Auth**: OTP via phone + JWT (backend); mock OTP (frontend login page).
+**Auth**: OTP via phone + JWT for staff; OTP via phone + JWT for patient portal.
